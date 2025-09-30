@@ -1045,6 +1045,20 @@ app.get('/api/cpo/documents', (req, res) => {
             }
         });
 
+        // Scan root-level cpo_templates/ and cpo_examples/ directories
+        const rootTemplatesPath = path.join(__dirname, 'cpo_templates');
+        const rootExamplesPath = path.join(__dirname, 'cpo_examples');
+
+        if (fs.existsSync(rootTemplatesPath)) {
+            const templateFiles = scanDirectory(rootTemplatesPath, 'templates');
+            documents.templates.push(...templateFiles);
+        }
+
+        if (fs.existsSync(rootExamplesPath)) {
+            const exampleFiles = scanDirectory(rootExamplesPath, 'examples');
+            documents.examples.push(...exampleFiles);
+        }
+
         // Scan root-level files in cpo/ directory
         if (fs.existsSync(cpoPath)) {
             const rootFiles = fs.readdirSync(cpoPath, { withFileTypes: true })
