@@ -154,6 +154,10 @@ h2{margin:0 0 16px 0;font-size:18px}
 
       <div class="form-group">
         <label>Claims & Evidence (optional)</label>
+        <div id="detectedClaimsInfo" style="display:none;margin-bottom:12px;padding:10px;background:#0d2818;border:1px solid #1a4d2e;border-radius:8px;font-size:13px;color:#7dfca5">
+          <strong>🔍 Detected <span id="claimCount">0</span> claims that may need evidence</strong>
+          <button onclick="autoPopulateClaims()" style="margin-left:10px;font-size:12px;padding:4px 8px">Add All to Form</button>
+        </div>
         <div id="claimsContainer"></div>
         <button class="add-btn" onclick="addClaim()">+ Add Claim</button>
       </div>
@@ -219,6 +223,42 @@ function addClaim() {
 
 function removeClaim(id) {
   document.getElementById(`claim-${id}`).remove();
+}
+
+function autoPopulateClaims() {
+  const claims = window.detectedClaimsForEvidence || [];
+  if (claims.length === 0) {
+    showValidation('No claims detected to populate', 'warn');
+    return;
+  }
+
+  // Add each detected claim
+  claims.forEach(claim => {
+    const container = document.getElementById('claimsContainer');
+    const id = ++claimCounter;
+
+    const div = document.createElement('div');
+    div.className = 'claim-item';
+    div.id = `claim-${id}`;
+    div.innerHTML = `
+      <div style="margin-bottom:8px">
+        <input type="text" id="claimText-${id}" placeholder="Claim text" style="margin-bottom:8px" value="${claim.text.replace(/"/g, '&quot;')}" />
+        <input type="url" id="evidenceUrl-${id}" placeholder="Evidence URL (click 'Search' to find)" style="margin-bottom:8px" />
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button onclick="window.open('${claim.suggestedSearch}', '_blank')" style="flex:1">🔍 Search for Evidence</button>
+          <span style="color:#9fb3c8;font-size:11px;align-self:center">(Type: ${claim.type})</span>
+        </div>
+        <input type="text" id="evidenceExcerpt-${id}" placeholder="Evidence excerpt (optional)" />
+      </div>
+      <button onclick="removeClaim(${id})">Remove</button>
+    `;
+    container.appendChild(div);
+  });
+
+  // Hide the info banner
+  document.getElementById('detectedClaimsInfo').style.display = 'none';
+
+  showValidation(`Added ${claims.length} detected claims. Click "Search for Evidence" buttons to find supporting URLs.`, 'success');
 }
 
 function generateRelease() {
@@ -684,6 +724,85 @@ function parsePastedRelease() {
   document.querySelectorAll('#issueCheckboxes input[type="checkbox"]').forEach(cb => {
     cb.checked = detectedIssues.includes(cb.value);
   });
+
+  // Detect factual claims that need evidence
+  const claimPatterns = [
+    // Experience/credentials claims
+    { pattern: /(extensive|significant|proven|decades of)\s+(?:experience|record|background)\s+(?:in|with|on)\s+([^.,]+)/gi, type: 'experience' },
+    { pattern: /(has|have)\s+(served|worked|led|managed|directed)\s+(?:as|in|at|for)\s+([^.,]+)/gi, type: 'experience' },
+
+    // Policy/voting record claims
+    { pattern: /(voted|supported|opposed|championed|blocked|passed)\s+([^.,]+)/gi, type: 'voting_record' },
+    { pattern: /(will|would)\s+(slash|cut|reduce|eliminate|increase|expand|protect)\s+([^.,]+)/gi, type: 'policy_claim' },
+
+    // Factual assertions about opponents/policies
+    { pattern: /(Project 2025|agenda|plan|proposal)\s+(?:that|which)\s+([^.,]+)/gi, type: 'policy_document' },
+    { pattern: /(rejects?|rejects? the results of|denies)\s+([^.,]+)/gi, type: 'factual_claim' },
+
+    // Organization/coalition descriptions
+    { pattern: /(coalition|organization|group)\s+of\s+([^.,]+)/gi, type: 'org_description' },
+    { pattern: /(representing|comprises?|includes?)\s+([^.,]+)/gi, type: 'org_composition' },
+
+    // Statistical/numerical claims
+    { pattern: /(\d+(?:,\d+)?(?:\.\d+)?(?:%|percent|million|billion|thousand))\s+([^.,]+)/gi, type: 'statistic' }
+  ];
+
+  const detectedClaims = [];
+
+  claimPatterns.forEach(({ pattern, type }) => {
+    let match;
+    pattern.lastIndex = 0; // Reset regex
+    while ((match = pattern.exec(text)) !== null) {
+      const claimText = match[0].trim();
+      const context = match[1] + ' ' + (match[2] || '');
+
+      // Skip very short matches
+      if (claimText.length < 20) continue;
+
+      // Generate suggested search query
+      let searchQuery = '';
+      if (type === 'experience') {
+        searchQuery = campaignName ? `${campaignName.split(' for ')[0]} ${context}` : context;
+      } else if (type === 'policy_document') {
+        searchQuery = claimText;
+      } else if (type === 'voting_record') {
+        searchQuery = `${context} voting record site:congress.gov OR site:votesmart.org`;
+      } else if (type === 'org_description') {
+        searchQuery = context + ' official website';
+      } else {
+        searchQuery = claimText;
+      }
+
+      detectedClaims.push({
+        text: claimText,
+        type: type,
+        searchQuery: searchQuery,
+        suggestedSearch: `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`
+      });
+    }
+  });
+
+  // Remove duplicates
+  const uniqueClaims = [];
+  const seen = new Set();
+  detectedClaims.forEach(claim => {
+    const key = claim.text.toLowerCase().substring(0, 50);
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueClaims.push(claim);
+    }
+  });
+
+  // Store for auto-population
+  window.detectedClaimsForEvidence = uniqueClaims;
+
+  // Show detected claims info
+  if (uniqueClaims.length > 0) {
+    document.getElementById('claimCount').textContent = uniqueClaims.length;
+    document.getElementById('detectedClaimsInfo').style.display = 'block';
+  } else {
+    document.getElementById('detectedClaimsInfo').style.display = 'none';
+  }
 
   // Extract quotes (look for quoted text)
   const quotePattern = /"([^"]+)"/g;
