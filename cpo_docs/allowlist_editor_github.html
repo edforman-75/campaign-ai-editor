@@ -52,6 +52,7 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
 
   <div class="status-bar">
     <span class="small" id="status">Ready. Click "Load from GitHub" to start.</span>
+    <span class="small" id="unsavedIndicator" style="color:#ffb86c;display:none;margin-left:16px">● Unsaved changes</span>
   </div>
 
   <div class="tools">
@@ -92,6 +93,7 @@ const countEl = document.getElementById('domainCount');
 const tokenInput = document.getElementById('token');
 const loadBtn = document.getElementById('loadGH');
 const commitBtn = document.getElementById('commitGH');
+const unsavedIndicator = document.getElementById('unsavedIndicator');
 
 let model = { version: 1, updated: new Date().toISOString(), notes: "", allowed_domains: [] };
 let fileSha = null; // GitHub file SHA for updates
@@ -123,6 +125,15 @@ function status(msg, type=''){
   statusEl.className = 'small ' + type;
 }
 
+function markUnsaved(){
+  commitBtn.disabled = false;
+  unsavedIndicator.style.display = 'inline';
+}
+
+function markSaved(){
+  unsavedIndicator.style.display = 'none';
+}
+
 function render(){
   model.updated = new Date().toISOString();
   listEl.innerHTML = "";
@@ -134,14 +145,16 @@ function render(){
     inp.addEventListener('input', ()=>{
       model.allowed_domains[i] = inp.value.trim();
       refresh();
-      commitBtn.disabled = false;
+      markUnsaved();
+      status('Changed: ' + d + ' → ' + inp.value.trim(), 'warn');
     });
     const del = document.createElement('button');
     del.textContent = 'Delete';
     del.addEventListener('click', ()=>{
       model.allowed_domains.splice(i,1);
       refresh();
-      commitBtn.disabled = false;
+      markUnsaved();
+      status('Deleted: ' + d, 'warn');
     });
     const ok = document.createElement('span');
     ok.textContent = domainRe.test(d) ? '✓' : '⚠';
@@ -204,6 +217,7 @@ loadBtn.onclick = async ()=>{
     model = Object.assign({version:1, notes:""}, json);
     refresh();
     commitBtn.disabled = false;
+    markSaved();
     status(`Loaded ${model.allowed_domains.length} domains from GitHub`, 'good');
   } catch(e) {
     status('Error: ' + e.message, 'bad');
@@ -251,7 +265,8 @@ commitBtn.onclick = async ()=>{
     const data = await res.json();
     fileSha = data.content.sha; // Update SHA
 
-    status(`Committed successfully! SHA: ${fileSha.substring(0,7)}`, 'good');
+    markSaved();
+    status(`✓ Saved to GitHub! Commit: ${fileSha.substring(0,7)}`, 'good');
   } catch(e) {
     status('Error: ' + e.message, 'bad');
     commitBtn.disabled = false;
@@ -266,23 +281,33 @@ document.getElementById('add').onclick = ()=>{
   model.allowed_domains.push(val);
   document.getElementById('domain').value = '';
   refresh();
-  commitBtn.disabled = false;
+  markUnsaved();
+  status('Added: ' + val, 'warn');
 };
 
 // Sort & dedupe
 document.getElementById('sort').onclick = ()=>{
+  const before = model.allowed_domains.length;
   model.allowed_domains = Array.from(new Set((model.allowed_domains||[]).map(x=>x.trim())))
     .sort((a,b)=>a.localeCompare(b));
+  const removed = before - model.allowed_domains.length;
   refresh();
-  commitBtn.disabled = false;
+  if(removed > 0) {
+    markUnsaved();
+    status(`Sorted and removed ${removed} duplicate(s)`, 'warn');
+  } else {
+    status('Sorted (no duplicates found)', '');
+  }
 };
 
 // Clear all
 document.getElementById('clear').onclick = ()=>{
   if(confirm('Clear all domains?')){
+    const count = model.allowed_domains.length;
     model.allowed_domains = [];
     refresh();
-    commitBtn.disabled = false;
+    markUnsaved();
+    status(`Cleared ${count} domain(s)`, 'warn');
   }
 };
 
