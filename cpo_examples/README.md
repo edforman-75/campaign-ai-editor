@@ -27,3 +27,7 @@ These examples are **reference implementations** — use them to:
 - Examples are tied to the same dual-layer JSON-LD context as templates (`schema.org` + CPO).
 - They use **role-based contacts** only (`press@janesmithforcongress.org`).
 - URLs and claims are illustrative — replace them with real campaign data.
+
+---
+
+[← Back to Portal Home](../cpo_docs/index.html)

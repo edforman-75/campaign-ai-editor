@@ -39,3 +39,6 @@ All templates follow a dual-layer JSON-LD pattern:
 - Evidence URLs should return HTTP 200 and be on your allowlist.
 - Subtype-specific requirements (e.g. rally must embed an Event) are built into the linter.
 
+---
+
+[← Back to Portal Home](../cpo_docs/index.html)

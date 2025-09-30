@@ -22,3 +22,7 @@ for browsing templates, examples, and tools.
 ## 🔍 Notes
 - Ensure `cpo_templates/` and `cpo_examples/` exist at repo root (the portal links reference them).
 - All paths are relative, so the structure should be preserved when unzipped at repo root.
+
+---
+
+[← Back to Portal Home](index.html)

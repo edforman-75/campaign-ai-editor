@@ -98,3 +98,5 @@ Ensures campaign press releases follow consistent rules for AI and search.
 - Verify raw JSON matches changes.
 
 ---
+
+[← Back to Portal Home](index.html)

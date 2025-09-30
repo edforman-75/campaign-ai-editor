@@ -16,3 +16,7 @@ This folder provides browser-only tools to help maintain your CPO configuration.
   - `cpo_templates/` — authoring templates
   - `cpo_examples/` — example JSON-LDs
   - `docs/` — GitHub Pages (optional public hosting)
+
+---
+
+[← Back to Portal Home](index.html)
