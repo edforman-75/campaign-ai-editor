@@ -265,61 +265,87 @@ function autoPopulateClaims() {
 async function findEvidence(claimId, searchQuery, claimType) {
   const statusEl = document.getElementById(`evidence-status-${claimId}`);
   const urlInput = document.getElementById(`evidenceUrl-${claimId}`);
+  const claimText = document.getElementById(`claimText-${claimId}`).value.trim();
+  const excerptInput = document.getElementById(`evidenceExcerpt-${claimId}`);
 
-  statusEl.innerHTML = '<span style="color:#ffb86c">🔄 Searching for evidence...</span>';
+  statusEl.innerHTML = '<span style="color:#ffb86c">🔄 Searching for evidence via API...</span>';
 
   try {
-    // Use a search API endpoint (this will need to be implemented server-side)
-    // For now, we'll construct smart search URLs based on claim type
+    // Try to use the Evidence Finder API first
+    const apiUrl = 'http://localhost:3002/api/find-evidence';
 
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        claim: claimText,
+        claimType: claimType,
+        searchQuery: searchQuery
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      if (data.success && data.bestMatch) {
+        // Auto-fill the evidence URL
+        urlInput.value = data.bestMatch.url;
+
+        // Auto-fill excerpt if available
+        if (data.bestMatch.excerpt && !excerptInput.value) {
+          excerptInput.value = data.bestMatch.excerpt;
+        }
+
+        statusEl.innerHTML = `
+          <div style="color:#7dfca5">
+            ✓ Found: <strong>${data.bestMatch.source || 'Source'}</strong><br>
+            ${data.bestMatch.reliability ? `<span style="font-size:10px">${data.bestMatch.reliability}</span>` : ''}
+          </div>
+        `;
+
+        showValidation('Evidence URL found and added!', 'success');
+      } else {
+        throw new Error('No results from API');
+      }
+    } else {
+      throw new Error('API not available');
+    }
+
+  } catch (error) {
+    // Fallback to manual search if API is not running
+    console.log('Evidence Finder API not available, falling back to manual search:', error.message);
+
+    statusEl.innerHTML = `<span style="color:#ffb86c">⚠ API offline - opening manual search...</span>`;
+
+    // Construct smart search URL based on claim type
     let targetUrl = '';
-    let searchHint = '';
 
     if (claimType === 'experience') {
-      // Try LinkedIn, campaign website, or news articles
-      searchHint = 'Try: LinkedIn, campaign bio page, or news articles';
       targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:linkedin.com OR site:*.com/about')}`;
     } else if (claimType === 'org_description' || claimType === 'org_composition') {
-      // Look for official organization websites
-      searchHint = 'Looking for official website or about page...';
       const orgName = searchQuery.replace('official website', '').trim();
       targetUrl = `https://www.google.com/search?q=${encodeURIComponent(orgName + ' official website')}`;
     } else if (claimType === 'policy_document') {
-      // Search for policy documents, fact-checks
-      searchHint = 'Searching policy docs and fact-checkers...';
       targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:politifact.com OR site:factcheck.org OR site:*.gov')}`;
     } else if (claimType === 'voting_record') {
-      // Congress.gov or VoteSmart
-      searchHint = 'Checking congressional records...';
-      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:congress.gov OR site:votesmart.org')}`;
     } else if (claimType === 'statistic') {
-      // Government sources, think tanks
-      searchHint = 'Looking for official statistics...';
       targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:*.gov OR site:brookings.edu OR site:pewresearch.org')}`;
     } else {
       targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-      searchHint = 'General search...';
     }
 
-    // Show the user we're searching
-    statusEl.innerHTML = `<span style="color:#7dd3fc">${searchHint}</span>`;
+    // Open manual search
+    window.open(targetUrl, '_blank');
 
-    // Since we can't directly access Google search results from browser JS due to CORS,
-    // we'll provide intelligent suggestions and open the search
     setTimeout(() => {
       statusEl.innerHTML = `
-        <div style="color:#7dfca5">
-          ✓ Search opened. Suggested sources:<br>
+        <div style="color:#7dd3fc">
+          ℹ Manual search opened. Suggested sources:<br>
           ${getSourceSuggestions(claimType)}
         </div>
       `;
     }, 500);
-
-    // Open search in new tab
-    window.open(targetUrl, '_blank');
-
-  } catch (error) {
-    statusEl.innerHTML = `<span style="color:#ff7b7b">Error: ${error.message}</span>`;
   }
 }
 
