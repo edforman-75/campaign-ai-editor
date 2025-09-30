@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "url": "https://lofgren.house.gov/media/press-releases/lofgren-panetta-announce-nearly-40m-levee-and-floodwall-construction-along",
+      "originalClassification": {
+        "contentFormat": "Press Release",
+        "messageTheme": "Announcement",
+        "contentSubtype": "Funding Announcement"
+      },
+      "correctedClassification": {
+        "contentFormat": "Press Release",
+        "messageTheme": "Policy & Issue Position",
+        "contentSubtype": "Legislative Action"
+      },
+      "text": "WASHINGTON, D.C. – Congresswoman Zoe Lofgren and Congressman Jimmy Panetta announced that...",
+      "timestamp": "2025-09-30T00:09:15.205Z",
+      "correctionType": "manual_correction",
+      "serverId": "1759190955222_2h7cy4uvl",
+      "serverTimestamp": "2025-09-30T00:09:15.222Z",
+      "sessionId": "test-session-1759190955206"
+    }
+  ],
+  "metadata": {
+    "totalEntries": 1,
+    "lastUpdated": "2025-09-30T00:09:15.222Z",
+    "version": "1.0"
+  }
+}

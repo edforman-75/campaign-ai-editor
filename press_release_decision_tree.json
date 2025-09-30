@@ -1,0 +1,719 @@
+{
+  "schema_version": "1.0.0",
+  "root_question": "What is the primary function of the press release?",
+  "choices": [
+    {
+      "id": "ANN",
+      "label": "Announcement",
+      "next": "ANN_Q"
+    },
+    {
+      "id": "END",
+      "label": "Endorsement",
+      "next": "END_Q"
+    },
+    {
+      "id": "FR",
+      "label": "Fundraising",
+      "next": "FR_Q"
+    },
+    {
+      "id": "POL",
+      "label": "Policy & Issue Position",
+      "next": "POL_Q"
+    },
+    {
+      "id": "ATT",
+      "label": "Contrast / Attack",
+      "next": "ATT_Q"
+    },
+    {
+      "id": "CRI",
+      "label": "Crisis / Defensive",
+      "next": "CRI_Q"
+    },
+    {
+      "id": "GRA",
+      "label": "Grassroots & Mobilization",
+      "next": "GRA_Q"
+    },
+    {
+      "id": "OPS",
+      "label": "General Campaign Operations",
+      "next": "OPS_Q"
+    }
+  ],
+  "nodes": {
+    "ANN_Q": {
+      "question": "Which Announcement subtype best fits?",
+      "choices": [
+        {
+          "id": "ANN.CL",
+          "label": "Campaign Lifecycle",
+          "next": "ANN_CL_Q"
+        },
+        {
+          "id": "ANN.OP",
+          "label": "Campaign Operations",
+          "next": "ANN_OP_Q"
+        },
+        {
+          "id": "ANN.EVT",
+          "label": "Events",
+          "next": "ANN_EVT_Q"
+        },
+        {
+          "id": "ANN.MIL",
+          "label": "Milestones & Metrics",
+          "next": "ANN_MIL_Q"
+        },
+        {
+          "id": "ANN.NAR",
+          "label": "Narrative / Branding",
+          "next": "ANN_NAR_Q"
+        },
+        {
+          "id": "ANN.LOG",
+          "label": "Election Logistics",
+          "next": "ANN_LOG_Q"
+        }
+      ]
+    },
+    "ANN_CL_Q": {
+      "question": "Select the lifecycle type",
+      "choices": [
+        {
+          "id": "ANN.CL.CAND",
+          "label": "Candidacy Declaration",
+          "leaf": true
+        },
+        {
+          "id": "ANN.CL.BAL",
+          "label": "Ballot Access",
+          "leaf": true
+        }
+      ]
+    },
+    "ANN_OP_Q": {
+      "question": "Select the operations type",
+      "choices": [
+        {
+          "id": "ANN.OP.STAFF",
+          "label": "Staffing Announcements",
+          "leaf": true
+        },
+        {
+          "id": "ANN.OP.HQ",
+          "label": "Headquarters Opening",
+          "leaf": true
+        },
+        {
+          "id": "ANN.OP.INFRA",
+          "label": "Campaign Infrastructure",
+          "leaf": true
+        }
+      ]
+    },
+    "ANN_EVT_Q": {
+      "question": "Select the event type",
+      "choices": [
+        {
+          "id": "ANN.EVT.RALLY",
+          "label": "Rally",
+          "leaf": true
+        },
+        {
+          "id": "ANN.EVT.TOWN",
+          "label": "Town Hall",
+          "leaf": true
+        },
+        {
+          "id": "ANN.EVT.DEBATE",
+          "label": "Debate/Forum",
+          "leaf": true
+        },
+        {
+          "id": "ANN.EVT.TOUR",
+          "label": "Listening Tour",
+          "leaf": true
+        },
+        {
+          "id": "ANN.EVT.PC",
+          "label": "Press Conference / Media Event",
+          "leaf": true
+        }
+      ]
+    },
+    "ANN_MIL_Q": {
+      "question": "Select the milestone type",
+      "choices": [
+        {
+          "id": "ANN.MIL.FR",
+          "label": "Fundraising Milestone",
+          "leaf": true
+        },
+        {
+          "id": "ANN.MIL.VOL",
+          "label": "Volunteer Milestone",
+          "leaf": true
+        },
+        {
+          "id": "ANN.MIL.POLL",
+          "label": "Polling Milestone",
+          "leaf": true
+        },
+        {
+          "id": "ANN.MIL.ENDO",
+          "label": "Endorsement Milestone",
+          "leaf": true
+        }
+      ]
+    },
+    "ANN_NAR_Q": {
+      "question": "Select the narrative/branding type",
+      "choices": [
+        {
+          "id": "ANN.NAR.SLOGAN",
+          "label": "Theme / Slogan Launch",
+          "leaf": true
+        },
+        {
+          "id": "ANN.NAR.POLICY",
+          "label": "Policy Agenda Launch",
+          "leaf": true
+        },
+        {
+          "id": "ANN.NAR.ADS",
+          "label": "Advertising Launch",
+          "leaf": true
+        }
+      ]
+    },
+    "ANN_LOG_Q": {
+      "question": "Select the election logistics type",
+      "choices": [
+        {
+          "id": "ANN.LOG.GOTV",
+          "label": "GOTV Reminder",
+          "leaf": true
+        },
+        {
+          "id": "ANN.LOG.BALINS",
+          "label": "Ballot Instructions",
+          "leaf": true
+        },
+        {
+          "id": "ANN.LOG.LEGAL",
+          "label": "Legal Challenges",
+          "leaf": true
+        }
+      ]
+    },
+    "END_Q": {
+      "question": "Which endorsement type?",
+      "choices": [
+        {
+          "id": "END.REC",
+          "label": "Received Endorsements",
+          "next": "END_REC_Q"
+        },
+        {
+          "id": "END.GIV",
+          "label": "Issuing Endorsements",
+          "next": "END_GIV_Q"
+        },
+        {
+          "id": "END.COA",
+          "label": "Coalitions",
+          "next": "END_COA_Q"
+        }
+      ]
+    },
+    "END_REC_Q": {
+      "question": "Select received endorsement source",
+      "choices": [
+        {
+          "id": "END.REC.UNION",
+          "label": "Union / Labor",
+          "leaf": true
+        },
+        {
+          "id": "END.REC.OFF",
+          "label": "Elected Official",
+          "leaf": true
+        },
+        {
+          "id": "END.REC.ORG",
+          "label": "Organization / Advocacy Group",
+          "leaf": true
+        }
+      ]
+    },
+    "END_GIV_Q": {
+      "question": "Select endorsement target",
+      "choices": [
+        {
+          "id": "END.GIV.CAND",
+          "label": "Candidate Endorsement",
+          "leaf": true
+        },
+        {
+          "id": "END.GIV.MEAS",
+          "label": "Ballot Measure Endorsement",
+          "leaf": true
+        }
+      ]
+    },
+    "END_COA_Q": {
+      "question": "Select coalition type",
+      "choices": [
+        {
+          "id": "END.COA.DEMO",
+          "label": "Demographic Coalition",
+          "leaf": true
+        },
+        {
+          "id": "END.COA.ISSUE",
+          "label": "Issue-Based Coalition",
+          "leaf": true
+        }
+      ]
+    },
+    "FR_Q": {
+      "question": "Which fundraising type?",
+      "choices": [
+        {
+          "id": "FR.EVT",
+          "label": "Event Promotion",
+          "next": "FR_EVT_Q"
+        },
+        {
+          "id": "FR.MIL",
+          "label": "Financial Milestones",
+          "next": "FR_MIL_Q"
+        },
+        {
+          "id": "FR.APP",
+          "label": "Appeals / Challenges",
+          "next": "FR_APP_Q"
+        }
+      ]
+    },
+    "FR_EVT_Q": {
+      "question": "Select fundraising event type",
+      "choices": [
+        {
+          "id": "FR.EVT.HD",
+          "label": "High-Dollar Event",
+          "leaf": true
+        },
+        {
+          "id": "FR.EVT.GR",
+          "label": "Grassroots Event",
+          "leaf": true
+        }
+      ]
+    },
+    "FR_MIL_Q": {
+      "question": "Select financial milestone",
+      "choices": [
+        {
+          "id": "FR.MIL.QTR",
+          "label": "Quarterly Totals",
+          "leaf": true
+        },
+        {
+          "id": "FR.MIL.DON",
+          "label": "Donor Statistics",
+          "leaf": true
+        }
+      ]
+    },
+    "FR_APP_Q": {
+      "question": "Select appeal/challenge type",
+      "choices": [
+        {
+          "id": "FR.APP.CON",
+          "label": "Opponent Contrast",
+          "leaf": true
+        },
+        {
+          "id": "FR.APP.URG",
+          "label": "Urgent Appeal",
+          "leaf": true
+        }
+      ]
+    },
+    "POL_Q": {
+      "question": "Which policy/issue type?",
+      "choices": [
+        {
+          "id": "POL.ROL",
+          "label": "Policy Rollout",
+          "next": "POL_ROL_Q"
+        },
+        {
+          "id": "POL.ADV",
+          "label": "Issue Advocacy",
+          "next": "POL_ADV_Q"
+        },
+        {
+          "id": "POL.REC",
+          "label": "Legislative Record",
+          "next": "POL_REC_Q"
+        }
+      ]
+    },
+    "POL_ROL_Q": {
+      "question": "Select policy rollout area",
+      "choices": [
+        {
+          "id": "POL.ROL.ECON",
+          "label": "Economic Plan",
+          "leaf": true
+        },
+        {
+          "id": "POL.ROL.HC",
+          "label": "Healthcare Plan",
+          "leaf": true
+        },
+        {
+          "id": "POL.ROL.EDU",
+          "label": "Education Plan",
+          "leaf": true
+        },
+        {
+          "id": "POL.ROL.FP",
+          "label": "Foreign Policy / Defense Plan",
+          "leaf": true
+        },
+        {
+          "id": "POL.ROL.CE",
+          "label": "Climate / Energy Plan",
+          "leaf": true
+        },
+        {
+          "id": "POL.ROL.OTHER",
+          "label": "Other Issue Package",
+          "leaf": true
+        }
+      ]
+    },
+    "POL_ADV_Q": {
+      "question": "Select advocacy type",
+      "choices": [
+        {
+          "id": "POL.ADV.CE",
+          "label": "Current Event Response",
+          "leaf": true
+        },
+        {
+          "id": "POL.ADV.ONGO",
+          "label": "Ongoing Advocacy",
+          "leaf": true
+        }
+      ]
+    },
+    "POL_REC_Q": {
+      "question": "Select legislative record focus",
+      "choices": [
+        {
+          "id": "POL.REC.VOTE",
+          "label": "Past Votes",
+          "leaf": true
+        },
+        {
+          "id": "POL.REC.BILL",
+          "label": "Sponsored Bills",
+          "leaf": true
+        }
+      ]
+    },
+    "ATT_Q": {
+      "question": "Which contrast/attack type?",
+      "choices": [
+        {
+          "id": "ATT.OPP",
+          "label": "Opposition Research / Negative",
+          "next": "ATT_OPP_Q"
+        },
+        {
+          "id": "ATT.POL",
+          "label": "Policy Contrast",
+          "next": "ATT_POL_Q"
+        },
+        {
+          "id": "ATT.RR",
+          "label": "Rapid Response / Rebuttal",
+          "next": "ATT_RR_Q"
+        }
+      ]
+    },
+    "ATT_OPP_Q": {
+      "question": "Select opposition research focus",
+      "choices": [
+        {
+          "id": "ATT.OPP.PERS",
+          "label": "Personal Scandals",
+          "leaf": true
+        },
+        {
+          "id": "ATT.OPP.ASSOC",
+          "label": "Problematic Associations",
+          "leaf": true
+        },
+        {
+          "id": "ATT.OPP.CHAR",
+          "label": "Character / Fitness Attacks",
+          "leaf": true
+        }
+      ]
+    },
+    "ATT_POL_Q": {
+      "question": "Select policy contrast focus",
+      "choices": [
+        {
+          "id": "ATT.POL.VOTE",
+          "label": "Voting Record",
+          "leaf": true
+        },
+        {
+          "id": "ATT.POL.STANCE",
+          "label": "Policy Stances",
+          "leaf": true
+        }
+      ]
+    },
+    "ATT_RR_Q": {
+      "question": "Select rapid response type",
+      "choices": [
+        {
+          "id": "ATT.RR.EVENT",
+          "label": "Countering Opponent Event",
+          "leaf": true
+        },
+        {
+          "id": "ATT.RR.FACT",
+          "label": "Fact-Check / Correction",
+          "leaf": true
+        }
+      ]
+    },
+    "CRI_Q": {
+      "question": "Which crisis/defensive type?",
+      "choices": [
+        {
+          "id": "CRI.SCN",
+          "label": "Scandal Response",
+          "next": "CRI_SCN_Q"
+        },
+        {
+          "id": "CRI.CLR",
+          "label": "Clarification / Correction",
+          "next": "CRI_CLR_Q"
+        }
+      ]
+    },
+    "CRI_SCN_Q": {
+      "question": "Select scandal target",
+      "choices": [
+        {
+          "id": "CRI.SCN.CAND",
+          "label": "Candidate Accusation",
+          "leaf": true
+        },
+        {
+          "id": "CRI.SCN.STAFF",
+          "label": "Staff Accusation",
+          "leaf": true
+        }
+      ]
+    },
+    "CRI_CLR_Q": {
+      "question": "Select clarification type",
+      "choices": [
+        {
+          "id": "CRI.CLR.MEDIA",
+          "label": "Media Fact-Check",
+          "leaf": true
+        },
+        {
+          "id": "CRI.CLR.WALK",
+          "label": "Walk-Back / Clarification",
+          "leaf": true
+        }
+      ]
+    },
+    "GRA_Q": {
+      "question": "Which grassroots/mobilization type?",
+      "choices": [
+        {
+          "id": "GRA.VOL",
+          "label": "Volunteer Recruitment",
+          "next": "GRA_VOL_Q"
+        },
+        {
+          "id": "GRA.OUT",
+          "label": "Community Outreach",
+          "next": "GRA_OUT_Q"
+        },
+        {
+          "id": "GRA.COA",
+          "label": "Coalition Formation",
+          "next": "GRA_COA_Q"
+        }
+      ]
+    },
+    "GRA_VOL_Q": {
+      "question": "Select volunteer drive type",
+      "choices": [
+        {
+          "id": "GRA.VOL.CANV",
+          "label": "Canvassing",
+          "leaf": true
+        },
+        {
+          "id": "GRA.VOL.PHONE",
+          "label": "Phone/Text Banking",
+          "leaf": true
+        },
+        {
+          "id": "GRA.VOL.DIG",
+          "label": "Digital Organizing",
+          "leaf": true
+        }
+      ]
+    },
+    "GRA_OUT_Q": {
+      "question": "Select outreach type",
+      "choices": [
+        {
+          "id": "GRA.OUT.LOCAL",
+          "label": "Local Events",
+          "leaf": true
+        },
+        {
+          "id": "GRA.OUT.FAITH",
+          "label": "Faith Outreach",
+          "leaf": true
+        },
+        {
+          "id": "GRA.OUT.CONST",
+          "label": "Constituency Events",
+          "leaf": true
+        }
+      ]
+    },
+    "GRA_COA_Q": {
+      "question": "Select coalition type",
+      "choices": [
+        {
+          "id": "GRA.COA.ISSUE",
+          "label": "Issue-Based",
+          "leaf": true
+        },
+        {
+          "id": "GRA.COA.DEMO",
+          "label": "Demographic-Based",
+          "leaf": true
+        }
+      ]
+    },
+    "OPS_Q": {
+      "question": "Which general operations type?",
+      "choices": [
+        {
+          "id": "OPS.POLL",
+          "label": "Polling Releases",
+          "next": "OPS_POLL_Q"
+        },
+        {
+          "id": "OPS.PREP",
+          "label": "Election Preparedness",
+          "next": "OPS_PREP_Q"
+        },
+        {
+          "id": "OPS.MISC",
+          "label": "Miscellaneous Updates",
+          "next": "OPS_MISC_Q"
+        }
+      ]
+    },
+    "OPS_POLL_Q": {
+      "question": "Select poll type",
+      "choices": [
+        {
+          "id": "OPS.POLL.INT",
+          "label": "Internal Polls",
+          "leaf": true
+        },
+        {
+          "id": "OPS.POLL.EXT",
+          "label": "External Polls",
+          "leaf": true
+        }
+      ]
+    },
+    "OPS_PREP_Q": {
+      "question": "Select preparedness type",
+      "choices": [
+        {
+          "id": "OPS.PREP.GUIDE",
+          "label": "Voter Guides",
+          "leaf": true
+        },
+        {
+          "id": "OPS.PREP.HOT",
+          "label": "Election Protection Hotlines",
+          "leaf": true
+        }
+      ]
+    },
+    "OPS_MISC_Q": {
+      "question": "Select misc type",
+      "choices": [
+        {
+          "id": "OPS.MISC.SCHED",
+          "label": "Schedule Update",
+          "leaf": true
+        },
+        {
+          "id": "OPS.MISC.LOG",
+          "label": "Operational Notes",
+          "leaf": true
+        }
+      ]
+    }
+  },
+  "secondary_attributes": {
+    "tone": [
+      "positive",
+      "negative",
+      "neutral",
+      "mixed"
+    ],
+    "target_audience": [
+      "voters",
+      "donors",
+      "media",
+      "opponent",
+      "general_public"
+    ],
+    "timing": [
+      "proactive",
+      "reactive"
+    ],
+    "issue_area": [
+      "economy",
+      "healthcare",
+      "education",
+      "environment",
+      "defense",
+      "immigration",
+      "justice",
+      "technology",
+      "election_process",
+      "other"
+    ]
+  }
+}

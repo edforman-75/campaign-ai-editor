@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Press Release Training Interface - Campaign AI Editor (v2.0 - 2025-09-30 00:05 PDT)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .text-panel, .analysis-panel {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .text-panel h3, .analysis-panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+
+        .press-release-text {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            line-height: 1.8;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-left: 4px solid #007acc;
+            overflow-y: auto;
+            max-height: 500px;
+            resize: vertical;
+            font-family: 'Monaco', 'Consolas', monospace;
+            cursor: text;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .press-release-text:hover {
+            background: #fafafa;
+        }
+
+        .press-release-text.editable {
+            background: #fafafa;
+            border: 2px solid #007acc;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            cursor: text;
+        }
+
+        .text-edit-controls {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .text-edit-controls button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .text-edit-controls button:hover {
+            background: #e9e9e9;
+        }
+
+        .editable-text {
+            min-height: 300px;
+            resize: vertical;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 15px;
+            border: 2px solid #007acc;
+            border-radius: 5px;
+            background: #fafafa;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .edit-mode-indicator {
+            background: #007acc;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .analysis-results {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .detection-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+
+        .detection-result.correct {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .detection-result.incorrect {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .confidence-high { background: #28a745; }
+        .confidence-medium { background: #ffc107; }
+        .confidence-low { background: #dc3545; }
+
+        .correction-controls {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+            margin: 15px 0;
+        }
+
+        .correction-controls h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+
+        select, input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary { background: #007acc; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+
+        .training-data-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background: white;
+        }
+
+        .training-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 4px solid #007acc;
+            background: #f8f9fa;
+            font-size: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #007acc;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .url-input-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .batch-controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Press Release Training Interface</h1>
+        <p>Enhance document detection accuracy by testing real press releases and correcting classifications.</p>
+
+        <!-- URL Input Section -->
+        <div class="url-input-section">
+            <h3>📥 Load Press Release from URL</h3>
+            <div class="batch-controls">
+                <div>
+                    <input type="url" id="press-release-url" placeholder="Enter press release URL..." style="width: 100%; margin-bottom: 10px;">
+                    <textarea id="manual-text-input" rows="4" placeholder="Or paste press release text directly here..."></textarea>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="loadFromUrl()">🌐 Load from URL</button>
+                    <button class="btn-secondary" onclick="loadFromText()">📝 Use Text Input</button>
+                    <button class="btn-warning" onclick="clearAll()">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <!-- Batch URL Processing -->
+            <div style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px;">
+                <h4>🔄 Batch URL Processing</h4>
+                <textarea id="batch-urls" rows="8" placeholder="Paste multiple URLs here, one per line..." style="width: 100%; margin-bottom: 10px; font-family: monospace;"></textarea>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn-primary" onclick="processBatchUrls()">⚡ Process URLs</button>
+                    <button class="btn-secondary" onclick="clearBatch()">🗑️ Clear Batch</button>
+                    <div style="margin-left: auto;">
+                        <span id="batch-progress">Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="load-status"></div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Text Panel -->
+            <div class="text-panel">
+                <h3>📄 Press Release Text</h3>
+                <div class="text-edit-controls">
+                    <button onclick="enableTextEditing()" title="Enable editing to clean up irrelevant content">✏️ Edit Text</button>
+                    <button onclick="applyCleanedText()" id="apply-text-btn" style="display:none; background:#4CAF50; color:white;">✅ Apply Cleaned Text</button>
+                    <button onclick="cancelTextEditing()" id="cancel-edit-btn" style="display:none;">❌ Cancel</button>
+                    <button onclick="removeHeaderFooter()" title="Remove navigation, headers, footers">🗑️ Remove Nav/Headers</button>
+                    <button onclick="removeExtraWhitespace()" title="Clean up extra line breaks and spacing">📝 Clean Spacing</button>
+                    <button onclick="removeSocialLinks()" title="Remove social media links and buttons">🔗 Remove Social</button>
+                </div>
+                <div id="edit-mode-indicator" class="edit-mode-indicator" style="display:none;">🖊️ EDIT MODE: Clean up the text below, then click "Apply Cleaned Text"</div>
+                <div id="press-release-display" class="press-release-text" onclick="enableEditModeOnClick()">
+                    <p style="color: #666; font-style: italic;">Load a press release using the URL input above or paste text directly.</p>
+                </div>
+            </div>
+
+            <!-- Analysis Panel -->
+            <div class="analysis-panel">
+                <h3>🔍 AI Analysis & Corrections</h3>
+
+                <!-- Current Detection Results -->
+                <div class="analysis-results">
+                    <h4>Current Detection:</h4>
+                    <div id="current-detection">
+                        <p style="color: #666; font-style: italic;">No analysis performed yet.</p>
+                    </div>
+                </div>
+
+                <!-- Manual Correction Controls -->
+                <div class="correction-controls">
+                    <h4>✏️ Manual Corrections:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label><strong>Content Format:</strong></label>
+                            <select id="correct-primary-type" onchange="updateContentTypeOptions()"
+                                <option value="">Select content format...</option>
+                                <option value="Press Release">Press Release</option>
+                                <option value="Speech">Speech</option>
+                                <option value="Policy Statement">Policy Statement</option>
+                                <option value="Social Media Post">Social Media Post</option>
+                                <option value="Email Campaign">Email Campaign</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label><strong>Content Type:</strong></label>
+                            <select id="correct-subtype" onchange="updateContentSubtypeOptions()"
+                                <option value="">Select content type...</option>
+                                <option value="Announcement">Announcement</option>
+                                <option value="Endorsement">Endorsement</option>
+                                <option value="Fundraising">Fundraising</option>
+                                <option value="Policy & Issue Position">Policy & Issue Position</option>
+                                <option value="Contrast/Attack">Contrast/Attack</option>
+                                <option value="Crisis/Defensive">Crisis/Defensive</option>
+                                <option value="Grassroots & Mobilization">Grassroots & Mobilization</option>
+                                <option value="General Campaign Operations">General Campaign Operations</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label><strong>Content Subtype:</strong></label>
+                        <select id="correct-sub-subtype" style="width: 100%;">
+                            <option value="">Select content subtype...</option>
+
+                            <!-- ANNOUNCEMENT Content Type -->
+                            <option value="Candidacy" data-theme="Announcement" data-sub-categories="Launch,Exploratory Committee,Re-election Bids,Withdrawal">Candidacy</option>
+                            <option value="Ballot Access" data-theme="Announcement" data-sub-categories="Petition Certification,Ballot Position,Legal Rulings">Ballot Access</option>
+                            <option value="Campaign Operations" data-theme="Announcement" data-sub-categories="Staffing Announcements,HQ Openings,Tech Rollouts">Campaign Operations</option>
+                            <option value="Events" data-theme="Announcement" data-sub-categories="Rallies,Town Halls,Debates,Tours,Press Conferences">Events</option>
+                            <option value="Milestones" data-theme="Announcement" data-sub-categories="Fundraising Totals,Volunteer Sign-ups,Polling Results,Endorsements Gathered">Milestones</option>
+                            <option value="Narrative / Branding" data-theme="Announcement" data-sub-categories="Campaign Slogan,Logo,Advertising Launches">Narrative / Branding</option>
+                            <option value="Election Logistics" data-theme="Announcement" data-sub-categories="GOTV Reminders,Early Voting Info,Mail Ballot Details">Election Logistics</option>
+
+                            <!-- ENDORSEMENT Content Type -->
+                            <option value="Received Endorsements" data-theme="Endorsement" data-sub-categories="Unions,Elected Officials,Organizations">Received Endorsements</option>
+                            <option value="Issuing Endorsements" data-theme="Endorsement" data-sub-categories="Candidate Endorses Another Candidate,Candidate Endorses Measure">Issuing Endorsements</option>
+                            <option value="Coalition Announcements" data-theme="Endorsement" data-sub-categories="Latinos for ___,Veterans for ___">Coalition Announcements</option>
+
+                            <!-- FUNDRAISING Content Type -->
+                            <option value="Event Promotion" data-theme="Fundraising" data-sub-categories="Dinners,Galas,Grassroots Drives">Event Promotion</option>
+                            <option value="Financial Milestones" data-theme="Fundraising" data-sub-categories="Quarterly Totals,Donor Counts,Average Donation">Financial Milestones</option>
+                            <option value="Challenges / Appeals" data-theme="Fundraising" data-sub-categories="Contrasting with Opponent's Fundraising,Small-donor Pushes">Challenges / Appeals</option>
+
+                            <!-- POLICY & ISSUE POSITION Content Type -->
+                            <option value="Policy Rollout" data-theme="Policy & Issue Position" data-sub-categories="Detailed Platforms,Multi-point Plans">Policy Rollout</option>
+                            <option value="Issue Advocacy" data-theme="Policy & Issue Position" data-sub-categories="Response to Current Events,Response to Legislation">Issue Advocacy</option>
+                            <option value="Legislative Record" data-theme="Policy & Issue Position" data-sub-categories="Highlighting Past Votes,Highlighting Sponsored Bills">Legislative Record</option>
+
+                            <!-- CONTRAST/ATTACK Content Type -->
+                            <option value="Opposition Research / Negative" data-theme="Contrast/Attack" data-sub-categories="Scandals,Associations,Controversial Votes">Opposition Research / Negative</option>
+                            <option value="Policy Contrast" data-theme="Contrast/Attack" data-sub-categories="Side-by-side Issue Differences">Policy Contrast</option>
+                            <option value="Rapid Response / Rebuttal" data-theme="Contrast/Attack" data-sub-categories="Countering Statements,Fact-checking">Rapid Response / Rebuttal</option>
+
+                            <!-- CRISIS/DEFENSIVE Content Type -->
+                            <option value="Scandal Response" data-theme="Crisis/Defensive" data-sub-categories="Allegations Involving Candidate,Allegations Involving Staff">Scandal Response</option>
+                            <option value="Clarification / Correction" data-theme="Crisis/Defensive" data-sub-categories="Addressing Misquotes,Correcting Media Reports">Clarification / Correction</option>
+
+                            <!-- GRASSROOTS & MOBILIZATION Content Type -->
+                            <option value="Volunteer Drives" data-theme="Grassroots & Mobilization" data-sub-categories="Canvassing,Phone Banks,Digital Pushes">Volunteer Drives</option>
+                            <option value="Community Outreach" data-theme="Grassroots & Mobilization" data-sub-categories="Special Events for Constituencies">Community Outreach</option>
+                            <option value="Coalition Formation" data-theme="Grassroots & Mobilization" data-sub-categories="Issue-based Coalitions,Demographic-based Coalitions">Coalition Formation</option>
+
+                            <!-- GENERAL CAMPAIGN OPERATIONS Content Type -->
+                            <option value="Polling Releases" data-theme="General Campaign Operations" data-sub-categories="Publicizing Favorable Numbers">Polling Releases</option>
+                            <option value="Election Preparedness" data-theme="General Campaign Operations" data-sub-categories="Voter Guides,Election Protection Hotlines">Election Preparedness</option>
+                            <option value="Miscellaneous Updates" data-theme="General Campaign Operations" data-sub-categories="Small Operational Notes">Miscellaneous Updates</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label><strong>Sub-Sub-Category (ML Analysis):</strong></label>
+                        <select id="correct-sub-sub-category" style="width: 100%; font-style: italic; color: #666;">
+                            <option value="">Select sub-sub-category for ML analysis...</option>
+                        </select>
+                        <small style="color: #666; font-size: 0.9em;">Optional - used for ML pattern analysis</small>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: end;">
+                        <div>
+                            <label>Confidence (0-100):</label>
+                            <input type="number" id="correct-confidence" min="0" max="100" value="100">
+                        </div>
+                        <button class="btn-success" onclick="saveCorrection()">💾 Save Correction</button>
+                        <button class="btn-danger" onclick="markAsCorrect()">✅ Mark AI as Correct</button>
+                    </div>
+                </div>
+
+                <!-- Training Data Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-samples">0</div>
+                        <div class="stat-label">Total Samples</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="correct-predictions">0</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="accuracy-rate">0%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Data Management -->
+        <div style="margin-top: 30px;">
+            <h3>📊 Training Data Collection</h3>
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 15px;">
+                <div>
+                    <button class="btn-primary" onclick="exportTrainingData()">📤 Export Training Data (JSON)</button>
+                    <button class="btn-secondary" onclick="exportTrainingData('csv')">📤 Export as CSV</button>
+                    <button class="btn-warning" onclick="clearTrainingData()">🗑️ Clear Training Data</button>
+                </div>
+                <div>
+                    <button class="btn-success" onclick="showTrainingDataList()">👁️ View Collected Data</button>
+                </div>
+            </div>
+
+            <div class="training-data-list" id="training-data-display" style="display: none;">
+                <h4>Collected Training Samples:</h4>
+                <div id="training-items"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let trainingData = JSON.parse(localStorage.getItem('pressReleaseTrainingData') || '[]');
+        let currentAnalysis = null;
+        let currentText = null;
+        let currentUrl = null;
+
+        // Update statistics display
+        function updateStats() {
+            const total = trainingData.length;
+            const correct = trainingData.filter(item => item.aiWasCorrect).length;
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            document.getElementById('total-samples').textContent = total;
+            document.getElementById('correct-predictions').textContent = correct;
+            document.getElementById('accuracy-rate').textContent = accuracy + '%';
+        }
+
+        // Load press release from URL using backend
+        async function loadFromUrl() {
+            const url = document.getElementById('press-release-url').value.trim();
+            if (!url) {
+                showStatus('Please enter a URL', 'error');
+                return;
+            }
+
+            showStatus('🌐 Fetching content from URL...', 'success');
+            currentUrl = url;
+
+            try {
+                const response = await fetch('/api/fetch-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentText = data.text;
+                    document.getElementById('press-release-display').textContent = data.text;
+                    await analyzeCurrentText();
+                    showStatus(`✅ Successfully loaded ${data.textLength} characters from URL`, 'success');
+                } else {
+                    showStatus(`❌ Failed to load URL: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Load from manual text input
+        async function loadFromText() {
+            const text = document.getElementById('manual-text-input').value.trim();
+            if (!text) {
+                showStatus('Please enter some text', 'error');
+                return;
+            }
+
+            currentText = text;
+            document.getElementById('press-release-display').textContent = text;
+
+            // Analyze the text
+            await analyzeCurrentText();
+
+            showStatus('Text loaded and analyzed successfully!', 'success');
+        }
+
+        // Analyze current text
+        async function analyzeCurrentText() {
+            if (!currentText) return;
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: currentText })
+                });
+
+                const data = await response.json();
+                currentAnalysis = data;
+
+                if (data.success) {
+                    displayAnalysisResults(data);
+                } else {
+                    showStatus('Analysis failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Display analysis results
+        function displayAnalysisResults(data) {
+            const display = document.getElementById('current-detection');
+
+            if (!data.documentType) {
+                display.innerHTML = '<p style="color: red;">No document type detected</p>';
+                return;
+            }
+
+            const docType = data.documentType;
+            const confidenceLevel = docType.primaryConfidence >= 70 ? 'high' :
+                                   docType.primaryConfidence >= 40 ? 'medium' : 'low';
+
+            let subtypeHtml = '';
+            if (docType.subtype && docType.subtypeConfidence > 0) {
+                const subtypeConfidenceLevel = docType.subtypeConfidence >= 70 ? 'high' :
+                                             docType.subtypeConfidence >= 40 ? 'medium' : 'low';
+                subtypeHtml = `
+                    <div style="margin-top: 15px;">
+                        <strong>Content Type:</strong> ${docType.subtype}
+                        <div class="confidence-bar">
+                            <div class="confidence-fill confidence-${subtypeConfidenceLevel}"
+                                 style="width: ${docType.subtypeConfidence}%"></div>
+                        </div>
+                        <small>${docType.subtypeConfidence}% confidence</small>
+                    </div>
+                `;
+            }
+
+            display.innerHTML = `
+                <div class="detection-result">
+                    <div><strong>Content Format:</strong> ${docType.primaryType}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill confidence-${confidenceLevel}"
+                             style="width: ${docType.primaryConfidence}%"></div>
+                    </div>
+                    <small>${docType.primaryConfidence}% confidence</small>
+                    ${subtypeHtml}
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <strong>Text Analysis:</strong>
+                    <div>Words: ${data.analysis.wordCount} | Sentences: ${data.analysis.sentenceCount}</div>
+                    <div>Characters: ${data.analysis.characterCount}</div>
+                </div>
+            `;
+        }
+
+        // Save manual correction
+        function saveCorrection() {
+            if (!currentAnalysis || !currentText) {
+                showStatus('No analysis to correct', 'error');
+                return;
+            }
+
+            const correctType = document.getElementById('correct-primary-type').value;
+            const correctSubtype = document.getElementById('correct-subtype').value;
+            const correctSubSubtype = document.getElementById('correct-sub-subtype').value;
+            const correctSubSubCategory = document.getElementById('correct-sub-sub-category').value;
+            const correctConfidence = parseInt(document.getElementById('correct-confidence').value) || 100;
+
+            if (!correctType) {
+                showStatus('Please select the correct content format', 'error');
+                return;
+            }
+
+            // Create training data entry
+            const trainingEntry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                text: currentText.substring(0, 500) + (currentText.length > 500 ? '...' : ''),
+                fullText: currentText,
+                url: currentUrl,
+                aiPrediction: {
+                    primaryType: currentAnalysis.documentType.primaryType,
+                    primaryConfidence: currentAnalysis.documentType.primaryConfidence,
+                    subtype: currentAnalysis.documentType.subtype || null,
+                    subtypeConfidence: currentAnalysis.documentType.subtypeConfidence || 0
+                },
+                correctLabel: {
+                    primaryType: correctType,
+                    subtype: correctSubtype || null,
+                    subSubtype: correctSubSubtype || null,
+                    subSubCategory: correctSubSubCategory || null,
+                    confidence: correctConfidence
+                },
+                aiWasCorrect: false // This is a correction
+            };
+
+            trainingData.push(trainingEntry);
+            saveTrainingData();
+            updateStats();
+
+            // Also save to server knowledge base
+            saveTrainingEntryToServer(trainingEntry);
+
+            const hierarchyDisplay = correctType +
+                (correctSubtype ? ' → ' + correctSubtype : '') +
+                (correctSubSubtype ? ' → ' + correctSubSubtype : '') +
+                (correctSubSubCategory ? ' → ' + correctSubSubCategory : '');
+            showStatus(`💾 Correction saved: ${hierarchyDisplay}`, 'success');
+
+            // Mark the current detection as corrected
+            const currentDetection = document.querySelector('.detection-result');
+            if (currentDetection) {
+                currentDetection.classList.add('incorrect');
+            }
+
+            // Remove current URL from batch and auto-advance
+            setTimeout(() => {
+                removeCurrentUrlFromBatch();
+            }, 1500); // Give user time to see the result
+        }
+
+        // Mark AI prediction as correct
+        function markAsCorrect() {
+            if (!currentAnalysis || !currentText) {
+                showStatus('No analysis to mark', 'error');
+                return;
+            }
+
+            const trainingEntry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                text: currentText.substring(0, 500) + (currentText.length > 500 ? '...' : ''),
+                fullText: currentText,
+                url: currentUrl,
+                aiPrediction: {
+                    primaryType: currentAnalysis.documentType.primaryType,
+                    primaryConfidence: currentAnalysis.documentType.primaryConfidence,
+                    subtype: currentAnalysis.documentType.subtype || null,
+                    subtypeConfidence: currentAnalysis.documentType.subtypeConfidence || 0
+                },
+                correctLabel: {
+                    primaryType: currentAnalysis.documentType.primaryType,
+                    subtype: currentAnalysis.documentType.subtype || null,
+                    confidence: currentAnalysis.documentType.primaryConfidence
+                },
+                aiWasCorrect: true
+            };
+
+            trainingData.push(trainingEntry);
+            saveTrainingData();
+            updateStats();
+
+            // Also save to server knowledge base
+            saveTrainingEntryToServer(trainingEntry);
+
+            showStatus('Marked as correct! AI prediction confirmed.', 'success');
+
+            // Mark the current detection as correct
+            const currentDetection = document.querySelector('.detection-result');
+            if (currentDetection) {
+                currentDetection.classList.add('correct');
+            }
+
+            // Remove current URL from batch and auto-advance
+            setTimeout(() => {
+                removeCurrentUrlFromBatch();
+            }, 1500); // Give user time to see the result
+        }
+
+        // Save training data to both localStorage and server
+        async function saveTrainingData() {
+            // Save to localStorage for immediate access
+            localStorage.setItem('pressReleaseTrainingData', JSON.stringify(trainingData));
+        }
+
+        // Save single training entry to server knowledge base
+        async function saveTrainingEntryToServer(trainingEntry) {
+            try {
+                const response = await fetch('/api/training-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Id': generateSessionId()
+                    },
+                    body: JSON.stringify(trainingEntry)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`Training entry saved to knowledge base. Total entries: ${result.totalEntries}`);
+                    return result;
+                } else {
+                    console.warn('Failed to save training entry to server:', result.error);
+                    return null;
+                }
+            } catch (error) {
+                console.warn('Error saving training entry to server:', error);
+                return null;
+            }
+        }
+
+        // Load training data from server knowledge base
+        async function loadServerTrainingData() {
+            try {
+                const response = await fetch('/api/training-data');
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`Knowledge base loaded: ${result.analytics.totalEntries} entries, ${result.analytics.accuracyRate}% accuracy`);
+                    return result;
+                } else {
+                    console.warn('Failed to load server training data:', result.error);
+                    return null;
+                }
+            } catch (error) {
+                console.warn('Error loading server training data:', error);
+                return null;
+            }
+        }
+
+        // Generate session ID for tracking
+        function generateSessionId() {
+            return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        // Export training data
+        function exportTrainingData(format = 'json') {
+            if (trainingData.length === 0) {
+                showStatus('No training data to export', 'error');
+                return;
+            }
+
+            let content, filename, mimeType;
+
+            if (format === 'csv') {
+                // CSV format
+                const headers = ['ID', 'Timestamp', 'URL', 'AI_Primary_Type', 'AI_Primary_Confidence', 'AI_Subtype', 'AI_Subtype_Confidence', 'Correct_Primary_Type', 'Correct_Subtype', 'AI_Was_Correct', 'Text_Preview'];
+                const rows = trainingData.map(item => [
+                    item.id,
+                    item.timestamp,
+                    item.url || '',
+                    item.aiPrediction.primaryType,
+                    item.aiPrediction.primaryConfidence,
+                    item.aiPrediction.subtype || '',
+                    item.aiPrediction.subtypeConfidence || 0,
+                    item.correctLabel.primaryType,
+                    item.correctLabel.subtype || '',
+                    item.aiWasCorrect,
+                    '"' + item.text.replace(/"/g, '""') + '"'
+                ]);
+
+                content = [headers, ...rows].map(row => row.join(',')).join('\n');
+                filename = 'press_release_training_data.csv';
+                mimeType = 'text/csv';
+            } else {
+                // JSON format
+                content = JSON.stringify(trainingData, null, 2);
+                filename = 'press_release_training_data.json';
+                mimeType = 'application/json';
+            }
+
+            // Download file
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus(`Training data exported as ${filename}`, 'success');
+        }
+
+        // Show/hide training data list
+        function showTrainingDataList() {
+            const display = document.getElementById('training-data-display');
+            const itemsContainer = document.getElementById('training-items');
+
+            if (display.style.display === 'none') {
+                if (trainingData.length === 0) {
+                    itemsContainer.innerHTML = '<p style="color: #666; font-style: italic;">No training data collected yet.</p>';
+                } else {
+                    itemsContainer.innerHTML = trainingData.map(item => `
+                        <div class="training-item">
+                            <div><strong>${item.correctLabel.primaryType}</strong> ${item.correctLabel.subtype ? '(' + item.correctLabel.subtype + ')' : ''}</div>
+                            <div style="font-size: 11px; color: #666;">
+                                AI: ${item.aiPrediction.primaryType} (${item.aiPrediction.primaryConfidence}%)
+                                ${item.aiWasCorrect ? '✅' : '❌'}
+                            </div>
+                            <div style="font-size: 11px; margin-top: 5px;">${item.text}</div>
+                        </div>
+                    `).join('');
+                }
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        // Clear all data
+        function clearAll() {
+            currentText = null;
+            currentUrl = null;
+            currentAnalysis = null;
+            document.getElementById('press-release-url').value = '';
+            document.getElementById('manual-text-input').value = '';
+            document.getElementById('press-release-display').innerHTML = '<p style="color: #666; font-style: italic;">Load a press release using the URL input above or paste text directly.</p>';
+            document.getElementById('current-detection').innerHTML = '<p style="color: #666; font-style: italic;">No analysis performed yet.</p>';
+            showStatus('Interface cleared', 'success');
+        }
+
+        // Clear training data
+        function clearTrainingData() {
+            if (confirm('Are you sure you want to clear all training data? This cannot be undone.')) {
+                trainingData = [];
+                saveTrainingData();
+                updateStats();
+                showStatus('Training data cleared', 'success');
+                document.getElementById('training-data-display').style.display = 'none';
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('load-status');
+            statusDiv.innerHTML = `<div class="${type === 'error' ? 'error-message' : 'success-message'}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Batch URL processing variables
+        let urlQueue = [];
+        let currentUrlIndex = 0;
+        let batchResults = [];
+
+        // Remove current URL from batch processing field
+        function removeCurrentUrlFromBatch() {
+            if (!currentUrl) return;
+
+            const batchUrlsElement = document.getElementById('batch-urls');
+            const currentUrls = batchUrlsElement.value.trim();
+
+            if (currentUrls) {
+                const urls = currentUrls.split('\n').map(url => url.trim()).filter(url => url);
+                const updatedUrls = urls.filter(url => url !== currentUrl);
+
+                batchUrlsElement.value = updatedUrls.join('\n');
+                batchUrlsElement.dispatchEvent(new Event('input', { bubbles: true }));
+
+                const remaining = updatedUrls.length;
+                showStatus(`🗑️ Removed processed URL. ${remaining} URLs remaining in batch.`, 'success');
+                console.log('🗑️ URL removed from batch:', currentUrl);
+                console.log('📋 Remaining URLs in batch:', remaining);
+
+                // If there are more URLs, process the next one
+                if (remaining > 0) {
+                    setTimeout(() => {
+                        const nextUrl = updatedUrls[0];
+                        document.getElementById('press-release-url').value = nextUrl;
+                        loadFromUrl();
+                    }, 1000);
+                } else {
+                    showStatus('✅ All URLs in batch have been processed!', 'success');
+                }
+            }
+        }
+
+        // Process batch URLs
+        async function processBatchUrls() {
+            const urlText = document.getElementById('batch-urls').value.trim();
+            if (!urlText) {
+                showStatus('Please enter URLs to process', 'error');
+                return;
+            }
+
+            urlQueue = urlText.split('\n').map(url => url.trim()).filter(url => url);
+            currentUrlIndex = 0;
+            batchResults = [];
+
+            if (urlQueue.length === 0) {
+                showStatus('No valid URLs found', 'error');
+                return;
+            }
+
+            document.getElementById('batch-progress').textContent = `Processing 0/${urlQueue.length}`;
+            showStatus(`🚀 Starting batch processing of ${urlQueue.length} URLs...`, 'success');
+
+            // Process first URL
+            await processNextUrl();
+        }
+
+        // Process next URL in queue
+        async function processNextUrl() {
+            if (currentUrlIndex >= urlQueue.length) {
+                // Batch complete
+                document.getElementById('batch-progress').textContent = `Complete: ${batchResults.length}/${urlQueue.length}`;
+                showStatus(`✅ Batch processing complete! Processed ${batchResults.length} URLs successfully.`, 'success');
+                return;
+            }
+
+            const url = urlQueue[currentUrlIndex];
+            document.getElementById('batch-progress').textContent = `Processing ${currentUrlIndex + 1}/${urlQueue.length}`;
+
+            try {
+                const response = await fetch('/api/fetch-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Auto-load this URL for analysis
+                    currentUrl = url;
+                    currentText = data.text;
+                    document.getElementById('press-release-url').value = url;
+                    document.getElementById('press-release-display').textContent = data.text;
+                    await analyzeCurrentText();
+
+                    batchResults.push({
+                        url: url,
+                        success: true,
+                        textLength: data.textLength
+                    });
+
+                    showStatus(`📄 Loaded URL ${currentUrlIndex + 1}/${urlQueue.length}: Ready for classification!`, 'success');
+
+                    // Don't auto-advance - wait for user to classify this one
+                    return;
+                } else {
+                    batchResults.push({
+                        url: url,
+                        success: false,
+                        error: data.error
+                    });
+
+                    showStatus(`⚠️ Skipped URL ${currentUrlIndex + 1}: ${data.error}`, 'error');
+
+                    // Auto-advance to next URL on failure
+                    currentUrlIndex++;
+                    setTimeout(processNextUrl, 1000);
+                }
+            } catch (error) {
+                batchResults.push({
+                    url: url,
+                    success: false,
+                    error: error.message
+                });
+
+                showStatus(`❌ Error processing URL ${currentUrlIndex + 1}: ${error.message}`, 'error');
+
+                // Auto-advance to next URL on error
+                currentUrlIndex++;
+                setTimeout(processNextUrl, 1000);
+            }
+        }
+
+        // Move to next URL in batch (called after user saves classification)
+        function nextBatchUrl() {
+            currentUrlIndex++;
+            if (currentUrlIndex < urlQueue.length) {
+                setTimeout(processNextUrl, 500);
+            } else {
+                document.getElementById('batch-progress').textContent = `Complete: ${batchResults.length}/${urlQueue.length}`;
+                showStatus(`🎉 All URLs processed! You can now export your training data.`, 'success');
+            }
+        }
+
+        // Clear batch processing
+        function clearBatch() {
+            document.getElementById('batch-urls').value = '';
+            urlQueue = [];
+            currentUrlIndex = 0;
+            batchResults = [];
+            document.getElementById('batch-progress').textContent = 'Ready';
+            showStatus('Batch cleared', 'success');
+        }
+
+        // Three-level hierarchy management functions
+        function updateContentTypeOptions() {
+            const contentFormat = document.getElementById('correct-primary-type').value;
+            const contentTypeSelect = document.getElementById('correct-subtype');
+            const contentSubtypeSelect = document.getElementById('correct-sub-subtype');
+            const subSubCategorySelect = document.getElementById('correct-sub-sub-category');
+
+            // Clear all dependent dropdowns
+            contentTypeSelect.innerHTML = '<option value="">Select content type...</option>';
+            contentSubtypeSelect.innerHTML = '<option value="">Select content subtype...</option>';
+            subSubCategorySelect.innerHTML = '<option value="">Select sub-sub-category for ML analysis...</option>';
+
+            // Only populate if a content format is selected
+            if (contentFormat === 'Press Release') {
+                contentTypeSelect.innerHTML = `
+                    <option value="">Select content type...</option>
+                    <option value="Announcement">Announcement</option>
+                    <option value="Endorsement">Endorsement</option>
+                    <option value="Fundraising">Fundraising</option>
+                    <option value="Policy & Issue Position">Policy & Issue Position</option>
+                    <option value="Contrast/Attack">Contrast/Attack</option>
+                    <option value="Crisis/Defensive">Crisis/Defensive</option>
+                    <option value="Grassroots & Mobilization">Grassroots & Mobilization</option>
+                    <option value="General Campaign Operations">General Campaign Operations</option>
+                `;
+            }
+        }
+
+        function updateContentSubtypeOptions() {
+            const contentType = document.getElementById('correct-subtype').value;
+            const contentSubtypeSelect = document.getElementById('correct-sub-subtype');
+            const subSubCategorySelect = document.getElementById('correct-sub-sub-category');
+
+            // Get all options in the dropdown
+            const allOptions = contentSubtypeSelect.querySelectorAll('option');
+
+            // Hide all options first
+            allOptions.forEach(option => {
+                if (option.value === '') {
+                    // Always show the placeholder option
+                    option.style.display = 'block';
+                    option.disabled = false;
+                } else if (!contentType) {
+                    // If no content type selected, hide all content subtype options
+                    option.style.display = 'none';
+                    option.disabled = true;
+                } else if (option.dataset.theme === contentType) {
+                    // Show options that match the selected content type
+                    option.style.display = 'block';
+                    option.disabled = false;
+                } else {
+                    // Hide options that don't match
+                    option.style.display = 'none';
+                    option.disabled = true;
+                }
+            });
+
+            // Reset selection to placeholder
+            contentSubtypeSelect.value = '';
+
+            // Clear sub-sub-category dropdown
+            subSubCategorySelect.innerHTML = '<option value="">Select sub-sub-category for ML analysis...</option>';
+        }
+
+        // New function to update sub-sub-category options
+        function updateSubSubCategoryOptions() {
+            const contentSubtype = document.getElementById('correct-sub-subtype').value;
+            const subSubCategorySelect = document.getElementById('correct-sub-sub-category');
+
+            // Clear existing options
+            subSubCategorySelect.innerHTML = '<option value="">Select sub-sub-category for ML analysis...</option>';
+
+            if (contentSubtype) {
+                // Find the selected option and get its sub-categories
+                const selectedOption = document.querySelector(`#correct-sub-subtype option[value="${contentSubtype}"]`);
+                if (selectedOption && selectedOption.dataset.subCategories) {
+                    const subCategories = selectedOption.dataset.subCategories.split(',');
+
+                    subCategories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.trim();
+                        option.textContent = category.trim();
+                        subSubCategorySelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        // Auto-advance functionality is already built into the original functions
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🏛️ Press Release Training Interface Loaded - v1.19 (2025-09-30 00:00 PDT)');
+            updateStats();
+
+            // Set up dropdown event listeners for 4-level hierarchy
+            document.getElementById('correct-primary-type').addEventListener('change', updateContentTypeOptions);
+            document.getElementById('correct-subtype').addEventListener('change', updateContentSubtypeOptions);
+            document.getElementById('correct-sub-subtype').addEventListener('change', updateSubSubCategoryOptions);
+
+            // Initialize content subtype dropdown to hide all options except placeholder
+            updateContentSubtypeOptions();
+        });
+
+        // Text editing functions
+        let originalText = '';
+        let isEditing = false;
+
+
+        // Handle text changes during editing
+        function handleTextChange() {
+            // Update currentText in real-time
+            const textDisplay = document.getElementById('press-release-display');
+            currentText = textDisplay.innerText || textDisplay.textContent;
+        }
+
+        // Handle text input during editing (for real-time updates)
+        function handleTextInput() {
+            // Update currentText in real-time during typing
+            const textDisplay = document.getElementById('press-release-display');
+            currentText = textDisplay.innerText || textDisplay.textContent;
+        }
+
+        function enableTextEditing() {
+            const textDisplay = document.getElementById('press-release-display');
+
+            if (!currentText) {
+                showStatus('No text loaded to edit', 'error');
+                return;
+            }
+
+            if (isEditing) {
+                // Already in edit mode, exit it
+                exitEditMode();
+                return;
+            }
+
+            enableEditModeInternal();
+        }
+
+        function enableEditModeOnClick() {
+            // Only enable edit mode if there's content loaded
+            if (!currentText) {
+                return;
+            }
+
+            // Don't re-enable if already editing
+            if (isEditing) {
+                return;
+            }
+
+            enableEditModeInternal();
+        }
+
+        function enableEditModeInternal() {
+            const textDisplay = document.getElementById('press-release-display');
+            const indicator = document.getElementById('edit-mode-indicator');
+            const applyBtn = document.getElementById('apply-text-btn');
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+
+            originalText = currentText;
+            isEditing = true;
+
+            // Show edit mode indicator and buttons
+            indicator.style.display = 'block';
+            applyBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+
+            // Make the text display directly editable with proper selection support
+            textDisplay.contentEditable = true;
+            textDisplay.classList.add('editable');
+            textDisplay.focus();
+
+            // Enable proper text selection and deletion
+            textDisplay.style.userSelect = 'text';
+            textDisplay.style.webkitUserSelect = 'text';
+            textDisplay.style.mozUserSelect = 'text';
+            textDisplay.style.msUserSelect = 'text';
+
+            // Auto-save on blur (when user clicks outside)
+            textDisplay.addEventListener('blur', autoSaveChanges);
+            textDisplay.addEventListener('keydown', handleEditKeydown);
+            textDisplay.addEventListener('input', handleTextInput);
+
+            showStatus('✏️ Edit mode enabled - Select text and press Delete/Backspace, or click outside to auto-save', 'success');
+        }
+
+        function applyCleanedText() {
+            const textDisplay = document.getElementById('press-release-display');
+            if (!textDisplay) {
+                showStatus('No text display found', 'error');
+                return;
+            }
+
+            if (!isEditing) {
+                showStatus('Not in edit mode', 'error');
+                return;
+            }
+
+            // Get the edited text content
+            const cleanedText = textDisplay.innerText || textDisplay.textContent || '';
+
+            if (!cleanedText.trim()) {
+                showStatus('No text content found', 'error');
+                return;
+            }
+
+            currentText = cleanedText;
+
+            // Exit edit mode first
+            exitEditMode();
+
+            // Update display with cleaned content (preserve formatting)
+            textDisplay.innerHTML = cleanedText.replace(/\n/g, '<br>');
+
+            showStatus('✅ Text cleaned and applied! Re-running analysis...', 'success');
+
+            // Re-run analysis with cleaned text
+            setTimeout(() => {
+                analyzeCurrentText();
+            }, 300);
+        }
+
+        function autoSaveChanges() {
+            if (!isEditing) return;
+
+            const textDisplay = document.getElementById('press-release-display');
+            const cleanedText = textDisplay.innerText || textDisplay.textContent;
+
+            if (cleanedText !== currentText) {
+                currentText = cleanedText;
+
+                // Exit edit mode
+                exitEditMode();
+
+                // Update display
+                textDisplay.innerHTML = cleanedText;
+
+                showStatus('✅ Changes auto-saved! Re-running analysis...', 'success');
+
+                // Re-run analysis with cleaned text
+                setTimeout(() => analyzeCurrentText(), 500);
+            } else {
+                exitEditMode();
+            }
+        }
+
+        function handleEditKeydown(event) {
+            // Allow Ctrl+A to select all
+            if (event.ctrlKey && event.key === 'a') {
+                event.preventDefault();
+                const textDisplay = document.getElementById('press-release-display');
+                const range = document.createRange();
+                range.selectNodeContents(textDisplay);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                return;
+            }
+
+            // Handle Delete and Backspace keys properly
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                // Let the browser handle the deletion naturally
+                // The input event will be triggered and handled by handleTextInput
+                return;
+            }
+
+            // Auto-save on Ctrl+Enter
+            if (event.key === 'Enter' && event.ctrlKey) {
+                event.preventDefault();
+                autoSaveChanges();
+            }
+        }
+
+        function handleTextInput(event) {
+            // This function is called whenever the text content changes
+            // We can use this to provide real-time feedback or validation
+            const textDisplay = document.getElementById('press-release-display');
+            const currentTextContent = textDisplay.innerText || textDisplay.textContent || '';
+
+            // Update the current text variable in real-time
+            currentText = currentTextContent;
+
+            // Show subtle indicator that text has been modified
+            showStatus('📝 Text modified - click outside to save', 'info');
+        }
+
+        function cancelTextEditing() {
+            currentText = originalText;
+
+            // Restore original display
+            const textDisplay = document.getElementById('press-release-display');
+            textDisplay.innerHTML = originalText;
+
+            exitEditMode();
+            showStatus('❌ Text editing cancelled', 'info');
+        }
+
+        function exitEditMode() {
+            isEditing = false;
+            const textDisplay = document.getElementById('press-release-display');
+
+            // Remove edit mode styling and event listeners
+            textDisplay.contentEditable = false;
+            textDisplay.classList.remove('editable');
+            textDisplay.removeEventListener('blur', autoSaveChanges);
+            textDisplay.removeEventListener('keydown', handleEditKeydown);
+            textDisplay.removeEventListener('input', handleTextInput);
+
+            // Reset user selection styles
+            textDisplay.style.userSelect = '';
+            textDisplay.style.webkitUserSelect = '';
+            textDisplay.style.mozUserSelect = '';
+            textDisplay.style.msUserSelect = '';
+
+            // Hide edit mode UI
+            document.getElementById('edit-mode-indicator').style.display = 'none';
+            document.getElementById('apply-text-btn').style.display = 'none';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+
+            // Update button text
+            const editBtn = document.querySelector('button[onclick="enableTextEditing()"]');
+            if (editBtn) {
+                editBtn.innerHTML = '✏️ Edit Text';
+            }
+        }
+
+        // Quick cleanup functions
+        function removeHeaderFooter() {
+            if (!currentText) {
+                showStatus('No text loaded', 'error');
+                return;
+            }
+
+            let cleaned = currentText;
+
+            // Remove common navigation and header patterns
+            const navPatterns = [
+                /Navigation\s*\n[\s\S]*?\n\n/gi,
+                /Menu\s*\n[\s\S]*?\n\n/gi,
+                /Skip to.*?\n/gi,
+                /Home\s*>.*?\n/gi,
+                /Breadcrumb.*?\n/gi,
+                /Contact\s*\|.*?\n/gi,
+                /Follow us.*?\n/gi,
+                /Social Media.*?\n/gi,
+                /Share this.*?\n/gi,
+                /Related Links.*?\n[\s\S]*?(?=\n\n|$)/gi,
+                /Footer.*?\n[\s\S]*?(?=\n\n|$)/gi
+            ];
+
+            navPatterns.forEach(pattern => {
+                cleaned = cleaned.replace(pattern, '');
+            });
+
+            updateTextAndReanalyze(cleaned, '🗑️ Removed navigation and header content');
+        }
+
+        function removeExtraWhitespace() {
+            if (!currentText) {
+                showStatus('No text loaded', 'error');
+                return;
+            }
+
+            let cleaned = currentText;
+
+            // Clean up excessive whitespace while preserving paragraph breaks
+            cleaned = cleaned.replace(/\n{3,}/g, '\n\n'); // Max 2 consecutive newlines
+            cleaned = cleaned.replace(/[ \t]+/g, ' '); // Multiple spaces to single space
+            cleaned = cleaned.replace(/^\s+|\s+$/gm, ''); // Trim lines
+            cleaned = cleaned.trim(); // Trim overall
+
+            updateTextAndReanalyze(cleaned, '📝 Cleaned up extra whitespace');
+        }
+
+        function removeSocialLinks() {
+            if (!currentText) {
+                showStatus('No text loaded', 'error');
+                return;
+            }
+
+            let cleaned = currentText;
+
+            // Remove social media links and share buttons
+            const socialPatterns = [
+                /facebook\.com\/share.*?\n/gi,
+                /twitter\.com\/intent.*?\n/gi,
+                /linkedin\.com\/sharing.*?\n/gi,
+                /Share on.*?\n/gi,
+                /Tweet.*?\n/gi,
+                /Like.*?\n/gi,
+                /Follow.*?@.*?\n/gi,
+                /@\w+\s*\n/gi,
+                /#+[A-Za-z0-9_]+\s*\n/gi // hashtags
+            ];
+
+            socialPatterns.forEach(pattern => {
+                cleaned = cleaned.replace(pattern, '');
+            });
+
+            updateTextAndReanalyze(cleaned, '🔗 Removed social media content');
+        }
+
+        function updateTextAndReanalyze(newText, message) {
+            currentText = newText;
+
+            // Update display
+            const textDisplay = document.getElementById('press-release-display');
+            textDisplay.innerHTML = newText;
+
+            showStatus(message + ' - Re-running analysis...', 'success');
+
+            // Re-run analysis
+            analyzeText();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "campaign-ai-editor",
+  "version": "1.0.0",
+  "description": "AI-powered campaign content editor with incremental development",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "PORT=3001 node server.js",
+    "test": "echo \"No tests yet - add tests as we build\""
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "author": "Campaign AI Editor Team",
+  "license": "MIT"
+}

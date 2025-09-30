@@ -1,0 +1,25 @@
+name: CPO Validate
+on:
+  push:
+    paths:
+      - '**.jsonld'
+      - 'cpo_jsonschema_v1.json'
+  pull_request:
+    paths:
+      - '**.jsonld'
+      - 'cpo_jsonschema_v1.json'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install jsonschema
+      - name: Validate examples
+        run: |
+          python cpo_linter.py cpo_examples/contrast_release.jsonld --schema cpo_jsonschema_v1.json
+          python cpo_linter.py cpo_examples/rally_release.jsonld --schema cpo_jsonschema_v1.json

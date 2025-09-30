@@ -1,0 +1,45 @@
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <https://schema.org/> .
+@prefix cpo: <https://campaign-press-ontology.org/ns/v1#> .
+
+cpo:PressReleaseShape
+    a sh:NodeShape ;
+    sh:targetClass schema:PressRelease ;
+    sh:property [
+        sh:path schema:headline ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path schema:datePublished ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path cpo:releaseType ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path cpo:subtype ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:articleBody ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+cpo:ClaimShape
+    a sh:NodeShape ;
+    sh:targetClass cpo:Claim ;
+    sh:property [
+        sh:path cpo:claimText ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path cpo:evidence ;
+        sh:minCount 1 ;
+    ] .

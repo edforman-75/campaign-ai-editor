@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Press Release Decision Tree Training Interface</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 16px;
+        }
+        .content-section {
+            margin-bottom: 30px;
+        }
+        .content-section h3 {
+            color: #333;
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .text-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .decision-tree {
+            background: #f0f7ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #007bff;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .choices {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .choice-button {
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 16px;
+        }
+        .choice-description {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        .choice-button:hover {
+            background: #e7f3ff;
+            transform: translateY(-1px);
+        }
+        .choice-button.selected {
+            background: #007bff;
+            color: white;
+        }
+        .breadcrumb {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #495057;
+        }
+        .breadcrumb-item {
+            display: inline-block;
+            margin-right: 5px;
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .breadcrumb-item:hover {
+            color: #0056b3;
+            background: rgba(0, 123, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #6c757d;
+        }
+        .secondary-attributes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .attribute-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .attribute-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .attribute-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        .attribute-group select {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .url-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .url-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .status-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .hidden {
+            display: none;
+        }
+        .progress-indicator {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .training-data-info {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Campaign Press Release Decision Tree Trainer</h1>
+            <p>Professional ML Training Interface with Structured Taxonomy</p>
+        </div>
+
+        <div class="content-section">
+            <h3>📰 Load Press Release</h3>
+            <div class="url-input">
+                <input type="text" id="press-release-url" placeholder="Enter press release URL...">
+                <button class="btn btn-primary" onclick="loadFromUrl()">Load from URL</button>
+            </div>
+            <div style="margin: 15px 0;">
+                <textarea id="press-release-text" placeholder="Or paste press release content here..." rows="8" style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; line-height: 1.5;"></textarea>
+                <button class="btn btn-primary" onclick="loadFromText()" style="margin-top: 10px;">Load from Text</button>
+            </div>
+            <div id="load-status"></div>
+        </div>
+
+        <div id="content-display" class="hidden">
+            <div class="content-section">
+                <h3>📄 Press Release Content</h3>
+                <div id="press-release-display" class="text-display"></div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 Decision Tree Classification</h3>
+                <div class="training-data-info">
+                    <strong>📊 Training Mode:</strong> Follow the decision tree questions to classify this press release according to the structured taxonomy.
+                </div>
+
+                <div id="decision-tree-container" class="decision-tree">
+                    <div id="breadcrumb" class="breadcrumb hidden"></div>
+                    <div id="question-container"></div>
+                    <div id="choices-container" class="choices"></div>
+                    <div class="progress-indicator">
+                        <span id="progress-text">Ready to begin classification</span>
+                    </div>
+                </div>
+
+                <div id="secondary-attributes" class="secondary-attributes hidden">
+                    <h4>📋 Secondary Attributes</h4>
+                    <div class="attribute-row">
+                        <div class="attribute-group">
+                            <label for="tone">Tone:</label>
+                            <select id="tone">
+                                <option value="">Select tone...</option>
+                                <option value="positive">Positive</option>
+                                <option value="negative">Negative</option>
+                                <option value="neutral">Neutral</option>
+                                <option value="mixed">Mixed</option>
+                            </select>
+                        </div>
+                        <div class="attribute-group">
+                            <label for="target-audience">Target Audience:</label>
+                            <select id="target-audience">
+                                <option value="">Select audience...</option>
+                                <option value="voters">Voters</option>
+                                <option value="donors">Donors</option>
+                                <option value="media">Media</option>
+                                <option value="opponent">Opponent</option>
+                                <option value="general_public">General Public</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="attribute-row">
+                        <div class="attribute-group">
+                            <label for="timing">Timing:</label>
+                            <select id="timing">
+                                <option value="">Select timing...</option>
+                                <option value="proactive">Proactive</option>
+                                <option value="reactive">Reactive</option>
+                                <option value="neutral">Neutral</option>
+                            </select>
+                        </div>
+                        <div class="attribute-group">
+                            <label for="issue-area">Issue Area:</label>
+                            <select id="issue-area">
+                                <option value="">Select issue area...</option>
+                                <option value="economy">Economy</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
+                                <option value="environment">Environment</option>
+                                <option value="defense">Defense</option>
+                                <option value="immigration">Immigration</option>
+                                <option value="justice">Justice</option>
+                                <option value="technology">Technology</option>
+                                <option value="election_process">Election Process</option>
+                                <option value="candidate_character">Candidate Character</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="reset-btn" class="btn btn-secondary" onclick="resetDecisionTree()">🔄 Reset</button>
+                    <button id="save-btn" class="btn btn-success hidden" onclick="saveClassification()">💾 Save Classification</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let decisionTree = null;
+        let currentNode = null;
+        let currentPath = [];
+        let selectedChoice = null;
+        let currentUrl = null;
+        let currentText = null;
+
+        // Category descriptions
+        const categoryDescriptions = {
+            'Announcement': 'New policies, programs, events, or achievements being introduced or launched',
+            'Endorsement': 'Supporting or backing specific candidates, policies, or organizations',
+            'Fundraising': 'Appeals for donations, fundraising events, or financial support requests',
+            'Policy & Issue Position': 'Stances on legislation, policy proposals, or current issues',
+            'Contrast / Attack': 'Targeting opponents or drawing distinctions between candidates/positions',
+            'Crisis / Defensive': 'Responding to negative news, defending actions, or damage control',
+            'Grassroots & Mobilization': 'Encouraging public participation, organizing supporters, or call-to-action messages',
+            'Personal / Biographical': 'Personal stories, background information, or character-focused content'
+        };
+
+        // Load decision tree data
+        async function loadDecisionTree() {
+            try {
+                const response = await fetch('press_release_decision_tree.json');
+                decisionTree = await response.json();
+                console.log('Decision tree loaded:', decisionTree);
+            } catch (error) {
+                console.error('Error loading decision tree:', error);
+                showStatus('Error loading decision tree', 'error');
+            }
+        }
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDecisionTree();
+        });
+
+        // Load content from URL
+        async function loadFromUrl() {
+            const url = document.getElementById('press-release-url').value.trim();
+            if (!url) {
+                showStatus('Please enter a URL', 'error');
+                return;
+            }
+
+            showStatus('Loading content...', 'success');
+
+            try {
+                const response = await fetch('http://localhost:3004/api/fetch-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUrl = url;
+                    currentText = data.text;
+                    displayFormattedText(data.text);
+                    document.getElementById('content-display').classList.remove('hidden');
+                    showStatus('Content loaded successfully!', 'success');
+                    initializeDecisionTree();
+                } else {
+                    showStatus('Error loading content: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Error loading content: ' + error.message, 'error');
+            }
+        }
+
+        // Load content from pasted text
+        function loadFromText() {
+            const text = document.getElementById('press-release-text').value.trim();
+            if (!text) {
+                showStatus('Please paste some content', 'error');
+                return;
+            }
+
+            currentUrl = null;
+            currentText = text;
+            displayFormattedText(text);
+            document.getElementById('content-display').classList.remove('hidden');
+            showStatus('Content loaded successfully!', 'success');
+            initializeDecisionTree();
+        }
+
+        // Format text with proper line breaks
+        function displayFormattedText(text) {
+            const displayElement = document.getElementById('press-release-display');
+
+            // Split text into paragraphs and add proper spacing
+            const paragraphs = text.split(/\n\s*\n/);
+            const formattedHtml = paragraphs.map(paragraph => {
+                const trimmed = paragraph.trim();
+                if (trimmed) {
+                    return `<p style="margin-bottom: 15px; line-height: 1.6;">${trimmed.replace(/\n/g, '<br>')}</p>`;
+                }
+                return '';
+            }).filter(p => p).join('');
+
+            displayElement.innerHTML = formattedHtml;
+        }
+
+        // Initialize decision tree flow
+        function initializeDecisionTree() {
+            if (!decisionTree) {
+                showStatus('Decision tree not loaded', 'error');
+                return;
+            }
+
+            currentNode = null;
+            currentPath = [];
+            selectedChoice = null;
+
+            showRootQuestion();
+        }
+
+        // Show the root question
+        function showRootQuestion() {
+            const questionContainer = document.getElementById('question-container');
+            const choicesContainer = document.getElementById('choices-container');
+
+            questionContainer.innerHTML = `<div class="question">${decisionTree.root_question}</div>`;
+            choicesContainer.innerHTML = '';
+
+            decisionTree.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+
+                const description = categoryDescriptions[choice.label] || '';
+                button.innerHTML = `
+                    <div>${choice.label}</div>
+                    ${description ? `<div class="choice-description">${description}</div>` : ''}
+                `;
+                button.onclick = () => selectChoice(choice);
+                choicesContainer.appendChild(button);
+            });
+
+            updateProgress('Select the primary function of this press release');
+            updateBreadcrumb([]);
+        }
+
+        // Handle choice selection
+        function selectChoice(choice) {
+            // Update UI
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+
+            selectedChoice = choice;
+
+            if (choice.leaf) {
+                // This is a leaf node - classification complete
+                currentPath.push(choice);
+                completeClassification(choice.id);
+            } else if (choice.next) {
+                // Navigate to next node
+                currentPath.push(choice);
+                navigateToNode(choice.next);
+            }
+        }
+
+        // Navigate to a specific node
+        function navigateToNode(nodeId) {
+            const node = decisionTree.nodes[nodeId];
+            if (!node) {
+                console.error('Node not found:', nodeId);
+                return;
+            }
+
+            currentNode = node;
+
+            const questionContainer = document.getElementById('question-container');
+            const choicesContainer = document.getElementById('choices-container');
+
+            questionContainer.innerHTML = `<div class="question">${node.question}</div>`;
+            choicesContainer.innerHTML = '';
+
+            node.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice.label;
+                button.onclick = () => selectChoice(choice);
+                choicesContainer.appendChild(button);
+            });
+
+            updateProgress(`Step ${currentPath.length + 1}: ${node.question}`);
+            updateBreadcrumb(currentPath);
+        }
+
+        // Complete the classification
+        function completeClassification(leafId) {
+            updateProgress(`✅ Classification complete: ${leafId}`);
+
+            // Show secondary attributes form
+            document.getElementById('secondary-attributes').classList.remove('hidden');
+            document.getElementById('save-btn').classList.remove('hidden');
+
+            console.log('Classification path:', currentPath);
+            console.log('Final leaf ID:', leafId);
+        }
+
+        // Update progress indicator
+        function updateProgress(text) {
+            document.getElementById('progress-text').textContent = text;
+        }
+
+        // Update breadcrumb with clickable navigation
+        function updateBreadcrumb(path) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (path.length === 0) {
+                breadcrumb.classList.add('hidden');
+                return;
+            }
+
+            breadcrumb.classList.remove('hidden');
+
+            let breadcrumbHtml = 'Path: ';
+
+            // Add "Start" link to go back to root
+            breadcrumbHtml += `<span class="breadcrumb-item" onclick="goToStep(-1)">Start</span>`;
+
+            // Add each step as clickable
+            path.forEach((choice, index) => {
+                breadcrumbHtml += `<span class="breadcrumb-separator">→</span>`;
+                breadcrumbHtml += `<span class="breadcrumb-item" onclick="goToStep(${index})">${choice.label}</span>`;
+            });
+
+            breadcrumb.innerHTML = breadcrumbHtml;
+        }
+
+        // Navigate to a specific step in the decision tree
+        function goToStep(stepIndex) {
+            if (stepIndex === -1) {
+                // Go back to root
+                currentPath = [];
+                currentNode = null;
+                showRootQuestion();
+            } else {
+                // Go to a specific step
+                currentPath = currentPath.slice(0, stepIndex + 1);
+                const targetChoice = currentPath[stepIndex];
+
+                if (stepIndex === currentPath.length - 1) {
+                    // We're at the last step, navigate to the next question
+                    if (targetChoice.next) {
+                        navigateToNode(targetChoice.next);
+                    } else if (targetChoice.leaf) {
+                        completeClassification(targetChoice.id);
+                    }
+                } else {
+                    // Navigate to the question that follows this choice
+                    const nextChoice = currentPath[stepIndex + 1];
+                    if (nextChoice && nextChoice.next) {
+                        navigateToNode(nextChoice.next);
+                    }
+                }
+            }
+        }
+
+        // Reset decision tree
+        function resetDecisionTree() {
+            console.log('resetDecisionTree function called');
+
+            // Clear all input fields with debugging
+            const urlField = document.getElementById('press-release-url');
+            const textField = document.getElementById('press-release-text');
+
+            console.log('Before clearing:');
+            console.log('URL field exists:', !!urlField, 'value length:', urlField ? urlField.value.length : 'N/A');
+            console.log('Text field exists:', !!textField, 'value length:', textField ? textField.value.length : 'N/A');
+
+            if (urlField) urlField.value = '';
+            if (textField) textField.value = '';
+
+            console.log('After clearing:');
+            console.log('URL field value length:', urlField ? urlField.value.length : 'N/A');
+            console.log('Text field value length:', textField ? textField.value.length : 'N/A');
+
+            // Hide content display
+            document.getElementById('content-display').classList.add('hidden');
+
+            // Reset all variables
+            currentUrl = null;
+            currentText = null;
+            currentNode = null;
+            currentPath = [];
+            selectedChoice = null;
+
+            // Hide secondary attributes and save button
+            document.getElementById('secondary-attributes').classList.add('hidden');
+            document.getElementById('save-btn').classList.add('hidden');
+
+            // Reset secondary attributes
+            document.getElementById('tone').value = '';
+            document.getElementById('target-audience').value = '';
+            document.getElementById('timing').value = '';
+            document.getElementById('issue-area').value = '';
+
+            // Clear the decision tree display
+            document.getElementById('question-container').innerHTML = '';
+            document.getElementById('choices-container').innerHTML = '';
+            document.getElementById('breadcrumb').classList.add('hidden');
+            document.getElementById('progress-text').textContent = 'Ready to begin classification';
+            console.log('resetDecisionTree function completed');
+        }
+
+        // Save classification
+        async function saveClassification() {
+            if (currentPath.length === 0) {
+                showStatus('Please complete the classification first', 'error');
+                return;
+            }
+
+            const leafChoice = currentPath[currentPath.length - 1];
+            if (!leafChoice.leaf) {
+                showStatus('Classification not complete', 'error');
+                return;
+            }
+
+            const classification = {
+                url: currentUrl,
+                text: currentText,
+                timestamp: new Date().toISOString(),
+                primary_label_id: leafChoice.id,
+                classification_path: currentPath.map(c => ({
+                    id: c.id,
+                    label: c.label
+                })),
+                secondary_attributes: {
+                    tone: document.getElementById('tone').value,
+                    target_audience: document.getElementById('target-audience').value,
+                    timing: document.getElementById('timing').value,
+                    issue_area: document.getElementById('issue-area').value
+                }
+            };
+
+            console.log('Saving classification:', classification);
+
+            try {
+                const response = await fetch('http://localhost:3004/api/decision-tree-classification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(classification)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('✅ Classification saved successfully!', 'success');
+                    console.log('Save successful, calling resetDecisionTree...');
+                    // Use a small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        resetDecisionTree();
+                        console.log('resetDecisionTree called');
+                    }, 100);
+                } else {
+                    showStatus('Error saving classification: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving classification:', error);
+                showStatus('Error saving classification: ' + error.message, 'error');
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('load-status');
+            statusDiv.innerHTML = `<div class="${type === 'error' ? 'error-message' : 'success-message'}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

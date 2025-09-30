@@ -1,0 +1,21 @@
+{
+  "title": "",
+  "subtitle": "",
+  "date": "",
+  "location": "",
+  "content": {
+    "headline": "",
+    "body": "",
+    "quote": "",
+    "attribution": ""
+  },
+  "contacts": {
+    "press": "",
+    "campaign": ""
+  },
+  "metadata": {
+    "tags": [],
+    "category": "",
+    "priority": "normal"
+  }
+}

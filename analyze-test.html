@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Analysis Test - Campaign AI Editor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #4CAF50; }
+        .status-error { background-color: #f44336; }
+        .status-pending { background-color: #ff9800; }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        textarea:focus {
+            border-color: #007acc;
+            outline: none;
+        }
+
+        .analysis-results {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .analysis-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007acc;
+        }
+        .analysis-item .label {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .analysis-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .raw-response {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: #007acc;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Text Analysis & Document Type Detection - Campaign AI Editor</h1>
+        <p><strong>Requirements 2.1 & 2.2:</strong> Text Input, Processing & Document Type Detection</p>
+
+        <!-- Text Input Section -->
+        <div class="test-section">
+            <h3><span class="status-indicator status-pending" id="input-status"></span>Campaign Content Input</h3>
+            <textarea id="content-input" placeholder="Enter your campaign content here for analysis...
+
+Example:
+We are proud to announce our new healthcare initiative. This comprehensive plan will provide affordable healthcare to all Americans. Together, we can build a stronger future!"></textarea>
+
+            <div style="margin-top: 15px;">
+                <button class="btn-primary" onclick="analyzeText()">Analyze Text</button>
+                <button class="btn-secondary" onclick="clearInput()">Clear</button>
+                <button class="btn-success" onclick="loadSampleText()">Load Sample</button>
+            </div>
+        </div>
+
+        <!-- Document Type Detection Section -->
+        <div class="test-section">
+            <h3><span class="status-indicator status-pending" id="doctype-status"></span>Document Type Detection</h3>
+            <div id="doctype-display">
+                <p>Document type will appear here after analysis...</p>
+            </div>
+        </div>
+
+        <!-- Analysis Results Section -->
+        <div class="test-section">
+            <h3><span class="status-indicator status-pending" id="analysis-status"></span>Text Analysis Results</h3>
+            <div id="analysis-display">
+                <p>Enter text above and click "Analyze Text" to see results...</p>
+            </div>
+            <div class="timestamp" id="analysis-timestamp"></div>
+        </div>
+
+        <!-- Raw API Response Section -->
+        <div class="test-section">
+            <h3><span class="status-indicator status-pending" id="api-status"></span>Raw API Response</h3>
+            <div class="raw-response" id="raw-response">No analysis performed yet...</div>
+        </div>
+
+        <!-- Document Type Sample Texts -->
+        <div class="test-section">
+            <h3>Document Type Sample Texts</h3>
+            <div style="margin-bottom: 15px;">
+                <h4>Press Release Subtypes:</h4>
+                <button class="btn-secondary" onclick="loadCandidacyAnnouncement()">Candidacy Announcement</button>
+                <button class="btn-secondary" onclick="loadEndorsementAnnouncement()">Endorsement</button>
+                <button class="btn-secondary" onclick="loadEventPromotion()">Event Promotion</button>
+                <button class="btn-secondary" onclick="loadPolicyUpdate()">Policy Update</button>
+                <button class="btn-secondary" onclick="loadIssueCampaign()">Issue Campaign</button>
+                <button class="btn-secondary" onclick="loadGrantAward()">Grant Award</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4>Other Document Types:</h4>
+                <button class="btn-secondary" onclick="loadSpeech()">Speech</button>
+                <button class="btn-secondary" onclick="loadPolicyStatement()">Policy Statement</button>
+                <button class="btn-secondary" onclick="loadSocialMedia()">Social Media</button>
+                <button class="btn-secondary" onclick="loadEmailCampaign()">Email Campaign</button>
+            </div>
+            <div style="margin-top: 15px;">
+                <h4>Edge Cases:</h4>
+                <button class="btn-secondary" onclick="testEmptyText()">Empty Text</button>
+                <button class="btn-secondary" onclick="testLongText()">Long Text</button>
+                <button class="btn-secondary" onclick="testSpecialChars()">Special Characters</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <small>Test different document types to verify detection accuracy</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastAnalysisTime = null;
+
+        // Main analysis function
+        async function analyzeText() {
+            const textInput = document.getElementById('content-input');
+            const text = textInput.value.trim();
+
+            if (!text) {
+                alert('Please enter some text to analyze');
+                return;
+            }
+
+            updateStatus('analysis-status', 'pending');
+            updateStatus('api-status', 'pending');
+            updateStatus('doctype-status', 'pending');
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayAnalysisResults(data);
+                    displayDocumentType(data);
+                    updateStatus('analysis-status', 'success');
+                    updateStatus('api-status', 'success');
+                    updateStatus('input-status', 'success');
+                    updateStatus('doctype-status', 'success');
+                } else {
+                    displayError(data);
+                    updateStatus('analysis-status', 'error');
+                    updateStatus('api-status', 'error');
+                }
+
+                displayRawResponse(data);
+                lastAnalysisTime = data.timestamp;
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                displayError({ error: 'Network error: ' + error.message });
+                updateStatus('analysis-status', 'error');
+                updateStatus('api-status', 'error');
+            }
+        }
+
+        // Display document type results
+        function displayDocumentType(data) {
+            const display = document.getElementById('doctype-display');
+
+            if (data.success && data.documentType) {
+                const docType = data.documentType;
+                let subtypeHtml = '';
+
+                if (docType.subtype && docType.subtypeConfidence > 0) {
+                    subtypeHtml = `
+                        <div style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 5px;">
+                            <h4 style="margin: 0 0 10px 0; color: #007acc;">Press Release Subtype:</h4>
+                            <div style="font-size: 20px; font-weight: bold; color: #333;">
+                                ${docType.subtype} (${docType.subtypeConfidence}% confidence)
+                            </div>
+                        </div>
+                    `;
+                }
+
+                display.innerHTML = `
+                    <div style="padding: 20px; background: #f9f9f9; border-radius: 5px;">
+                        <h4 style="margin: 0 0 15px 0;">Detected Document Type:</h4>
+                        <div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 10px;">
+                            📄 ${docType.primaryType}
+                        </div>
+                        <div style="font-size: 16px; color: #666;">
+                            Confidence: ${docType.primaryConfidence}%
+                        </div>
+                        ${subtypeHtml}
+                    </div>
+                `;
+            } else {
+                display.innerHTML = '<p style="color: red;">Document type detection failed</p>';
+            }
+        }
+
+        // Display analysis results
+        function displayAnalysisResults(data) {
+            const display = document.getElementById('analysis-display');
+            const timestamp = document.getElementById('analysis-timestamp');
+
+            if (data.success && data.analysis) {
+                const analysis = data.analysis;
+                display.innerHTML = `
+                    <div class="analysis-results">
+                        <h4>Analysis Results for: "${data.text}"</h4>
+                        <div class="analysis-grid">
+                            <div class="analysis-item">
+                                <div class="label">Words</div>
+                                <div class="value">${analysis.wordCount}</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="label">Sentences</div>
+                                <div class="value">${analysis.sentenceCount}</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="label">Characters</div>
+                                <div class="value">${analysis.characterCount}</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="label">Characters (no spaces)</div>
+                                <div class="value">${analysis.characterCountNoSpaces}</div>
+                            </div>
+                        </div>
+                        <p><strong>Full text length:</strong> ${data.textLength} characters</p>
+                    </div>
+                `;
+                timestamp.textContent = `Analysis completed: ${new Date(data.timestamp).toLocaleString()}`;
+            } else {
+                display.innerHTML = `<p style="color: red;">Analysis failed: ${data.error || 'Unknown error'}</p>`;
+                timestamp.textContent = '';
+            }
+        }
+
+        // Display error
+        function displayError(data) {
+            const display = document.getElementById('analysis-display');
+            display.innerHTML = `<p style="color: red;">Error: ${data.error || 'Analysis failed'}</p>`;
+        }
+
+        // Display raw API response
+        function displayRawResponse(data) {
+            const rawDisplay = document.getElementById('raw-response');
+            rawDisplay.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Update status indicators
+        function updateStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.className = `status-indicator status-${status}`;
+        }
+
+        // Clear input
+        function clearInput() {
+            document.getElementById('content-input').value = '';
+            document.getElementById('analysis-display').innerHTML = '<p>Input cleared. Enter text and analyze again...</p>';
+            document.getElementById('analysis-timestamp').textContent = '';
+            document.getElementById('raw-response').textContent = 'No analysis performed yet...';
+            updateStatus('input-status', 'pending');
+            updateStatus('analysis-status', 'pending');
+            updateStatus('api-status', 'pending');
+        }
+
+        // Load sample text
+        function loadSampleText() {
+            const sampleText = `We are proud to announce our comprehensive healthcare reform initiative. This groundbreaking plan will provide affordable, accessible healthcare to all Americans, regardless of their economic status.
+
+Our three-pillar approach includes: expanding Medicare coverage, reducing prescription drug costs, and investing in preventive care programs. Together, we can build a healthier, stronger future for our communities!
+
+This initiative represents our commitment to putting people first. Healthcare is a human right, not a privilege.`;
+
+            document.getElementById('content-input').value = sampleText;
+            updateStatus('input-status', 'success');
+        }
+
+        // Test scenarios
+        function testEmptyText() {
+            document.getElementById('content-input').value = '';
+            analyzeText();
+        }
+
+        function testLongText() {
+            const longText = "This is a very long text. ".repeat(100) + "It has many repeated sentences to test large text processing capabilities.";
+            document.getElementById('content-input').value = longText;
+            analyzeText();
+        }
+
+        function testSpecialChars() {
+            const specialText = "Test with special chars: @#$%^&*()! Questions? Yes! Exclamations! Multiple sentences... with ellipses. Numbers 123 and symbols.";
+            document.getElementById('content-input').value = specialText;
+            analyzeText();
+        }
+
+        // Sample text functions for document types
+        function loadCandidacyAnnouncement() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Campaign Office
+Phone: (555) 123-4567
+
+Jane Smith Announces Candidacy for City Council
+
+ANYTOWN, State - Today, Jane Smith announces her candidacy for Anytown City Council, seeking election to represent District 3 in the upcoming municipal elections.
+
+"I am passionate about addressing the rising cost of housing and ensuring our community remains affordable for working families," said Smith. "Together, we can build a stronger future for Anytown."
+
+Smith, a long-time resident and community advocate, will formally launch her campaign at a community event on Saturday, March 15th at the Community Center.
+
+For more information, visit www.janesmith2024.com
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadEndorsementAnnouncement() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Smith for Council
+Email: press@smithcouncil.com
+
+Local Teachers Association Endorses Jane Smith for City Council
+
+ANYTOWN, State - The Anytown Teachers Association announced today their endorsement of Jane Smith for City Council District 3, citing her strong support for public education and community development.
+
+"Jane Smith has consistently supported our educators and understands the critical role education plays in our community's future," said Maria Rodriguez, President of the Anytown Teachers Association. "We are proud to endorse her candidacy."
+
+Smith expressed gratitude for the endorsement, stating, "Having the backing of our dedicated teachers reinforces my commitment to prioritizing education funding and supporting our schools."
+
+This endorsement from the 500-member teachers association represents strong support from the education community.
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadEventPromotion() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Smith Campaign
+Phone: (555) 123-4567
+
+Community Invited to Attend Town Hall with Candidate Jane Smith
+
+ANYTOWN, State - Join us for an important community town hall meeting with City Council candidate Jane Smith to discuss local issues and share your concerns.
+
+When: Saturday, March 22nd at 7:00 PM
+Where: Anytown Community Center, 123 Main Street
+What: Town Hall Forum - Your Voice, Your Future
+
+Come and meet Jane Smith as she presents her vision for District 3 and answers questions from community members. Light refreshments will be served.
+
+"I want to hear directly from residents about the challenges facing our neighborhood," said Smith. "This town hall is your opportunity to be heard and help shape our community's future."
+
+Free parking available. Event is open to all District 3 residents.
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadPolicyUpdate() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Smith for Council
+Email: policy@smithcouncil.com
+
+Smith Announces Comprehensive Housing Initiative Plan
+
+ANYTOWN, State - City Council candidate Jane Smith today announced her comprehensive housing initiative aimed at addressing the affordable housing crisis in District 3.
+
+The plan proposes three key components:
+• Establishing a Housing Trust Fund to support first-time homebuyers
+• Implementing inclusionary zoning to require affordable units in new developments
+• Creating tenant protection measures to prevent displacement
+
+"Housing should be a right, not a privilege," stated Smith. "This initiative will help ensure that working families can afford to live and thrive in our community."
+
+The detailed policy proposal includes specific funding mechanisms and implementation timelines, demonstrating Smith's commitment to actionable solutions rather than empty promises.
+
+For the full policy document, visit www.janesmith2024.com/housing-plan
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadIssueCampaign() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Citizens for Clean Parks
+Email: info@cleanparks.org
+
+Campaign Launches to Address Park Safety and Maintenance Crisis
+
+ANYTOWN, State - A new awareness campaign launched today calling for immediate action to address the deteriorating condition of public parks in District 3, with candidate Jane Smith advocating for increased funding and community involvement.
+
+The "Clean Parks, Safe Streets" campaign urges residents to contact city officials and advocates for a comprehensive parks improvement plan. Public safety concerns and maintenance issues have made several local parks unusable for families.
+
+"Our parks should be safe spaces where children can play and families can gather," said Smith. "We call for immediate action to restore these vital community resources."
+
+The campaign encourages residents to join volunteer cleanup efforts and attend upcoming city budget meetings to voice their concerns.
+
+For more information and to get involved, visit www.cleanparks.org
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadSpeech() {
+            const text = `Thank you all for being here tonight.
+
+My fellow citizens, today I stand before you not just as a candidate, but as your neighbor who shares the same hopes and dreams for our community's future.
+
+Together, we face challenges that require bold action and united purpose. The rising cost of living, the need for better infrastructure, and ensuring quality education for our children - these are not just campaign issues, they are the daily realities we all navigate.
+
+Ladies and gentlemen, I believe that by working together, we can build a stronger, more prosperous community where every family has the opportunity to thrive.
+
+Thank you, and God bless our great city.`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadPolicyStatement() {
+            const text = `POLICY STATEMENT ON MUNICIPAL BUDGET REFORM
+
+Whereas the current budget process lacks transparency and community input;
+
+Whereas fiscal responsibility requires careful stewardship of taxpayer dollars;
+
+Therefore, I propose the following comprehensive budget reform legislation:
+
+Section 1: All budget meetings shall be held with full public access and advance notice.
+
+Section 2: Department heads must justify expenditures exceeding $50,000 in public hearings.
+
+Section 3: A citizen review board shall evaluate all contracts above $100,000.
+
+This act shall take effect immediately upon passage and will ensure greater accountability in municipal spending while maintaining essential services for residents.`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadSocialMedia() {
+            const text = `🏛️ Just wrapped up another great community meeting! So inspired by the energy and ideas from District 3 residents. #CommunityFirst #D3Strong
+
+Your voices matter! Share your thoughts on our housing initiative below 👇
+
+📅 Don't forget: Town Hall THIS Saturday 7pm at the Community Center
+📍 123 Main Street
+🅿️ Free parking available
+
+Follow @JaneSmithD3 for updates and like this post to spread the word!
+
+Link in bio for full policy details 🔗
+
+#JaneForCouncil #HousingJustice #Community #Vote2024`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadEmailCampaign() {
+            const text = `Dear Friend,
+
+With just 30 days until Election Day, I wanted to personally reach out to thank you for your continued support of our campaign for City Council.
+
+Your contribution of time, energy, and resources has made all the difference in helping us reach voters across District 3. Thanks to supporters like you, we've been able to:
+
+• Host 12 community forums
+• Knock on over 3,000 doors
+• Distribute policy information to every household
+
+Now, as we enter the final stretch, I'm asking for your help once more. Can you contribute $25, $50, or whatever you can afford to help us reach our final fundraising goal?
+
+DONATE NOW: [Contribute Button]
+
+Every dollar helps us communicate our message of community-first leadership to undecided voters.
+
+Forward this email to friends and family who share our vision for a stronger District 3.
+
+Together, we will win this election and create positive change for our community.
+
+With gratitude,
+Jane Smith
+
+P.S. Don't forget to vote on November 5th!
+
+Unsubscribe | Update Preferences | Contact Us`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        function loadGrantAward() {
+            const text = `FOR IMMEDIATE RELEASE
+Contact: Lofgren Office
+Phone: (202) 225-3072
+
+Lofgren, Panetta Announce Nearly $40M for Levee and Floodwall Construction along Pajaro River
+
+WATSONVILLE, CA – Today, U.S. Representatives Zoe Lofgren (CA-18) and Jimmy Panetta (CA-19) announced the U.S. Army Corp of Engineers awarded Granite Construction Company a $39,330,400 firm-fixed-price contract for levee and floodwall construction.
+
+This construction will be performed along the Pajaro River in Watsonville, California, providing critical flood protection for residents and businesses who have been waiting far too long for necessary infrastructure improvements.
+
+"The residents and businesses in Watsonville and along the Pajaro River have been waiting far too long for necessary flood protection," said Reps. Lofgren and Panetta. "This levee and floodwall construction will help save lives and property."
+
+This funding was authorized by the Infrastructure Investment and Jobs Act of 2021. Construction is estimated to be completed by September 11, 2027.
+
+###`;
+
+            document.getElementById('content-input').value = text;
+            updateStatus('input-status', 'success');
+        }
+
+        // Initialize page
+        window.addEventListener('load', () => {
+            console.log('📝 Text Analysis & Document Type Detection Page Loaded');
+            console.log('🧪 Ready to test Requirements 2.1 & 2.2');
+            loadSampleText(); // Load sample text on page load
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CPO — Subtype Profiles Viewer</title><link rel="stylesheet" href="styles.css"/></head>
+<body><div class="header"><h1>Subtype Profiles Viewer</h1><p>Search and explore subtype requirements and embedded constraints.</p></div>
+<div class="container" style="grid-template-columns:1fr">
+<section class="section">
+<input id="search" placeholder="search subtype or notes..." oninput="render()" style="padding:10px;border-radius:10px;border:1px solid #1e2a44;background:#0a1220;color:#e6edf3;width:100%"/>
+<table style="margin-top:12px"><thead><tr><th>Subtype</th><th>Required</th><th>Embedded</th><th>Sensitive?</th><th>Notes</th></tr></thead>
+<tbody id="rows"></tbody></table>
+</section></div>
+<script>
+const PROFILES = {"ANN.EVT.RALLY": {"required": ["headline", "datePublished", "articleBody", "cpo:cta"], "embedded": ["Event(startDate,location)"], "notes": "(placeholder) provide subtype profiles file for full set."}};
+function render(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const tbody=document.getElementById('rows'); tbody.innerHTML='';
+  Object.entries(PROFILES).forEach(([k,v])=>{
+    const notes=v.notes||''; const req=(v.required||[]).join(', '); const emb=(v.embedded||[]).join(', ');
+    const sens=v.sensitive_claims?'Yes':'No'; const hay=(k+' '+notes+' '+req+' '+emb).toLowerCase();
+    if(q && !hay.includes(q)) return;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><code>${k}</code></td><td>${req}</td><td>${emb}</td><td>${sens}</td><td>${notes}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+render();
+</script></body></html>

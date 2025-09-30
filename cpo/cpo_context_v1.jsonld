@@ -1,0 +1,136 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "cpo": "https://campaign-press-ontology.org/ns/v1#",
+    "PressRelease": "schema:PressRelease",
+    "NewsArticle": "schema:NewsArticle",
+    "CreativeWork": "schema:CreativeWork",
+    "Organization": "schema:Organization",
+    "Person": "schema:Person",
+    "Event": "schema:Event",
+    "Place": "schema:Place",
+    "cpo:CampaignPressRelease": {
+      "@id": "cpo:CampaignPressRelease",
+      "@type": "@id"
+    },
+    "cpo:AnnouncementRelease": {
+      "@id": "cpo:AnnouncementRelease",
+      "@type": "@id"
+    },
+    "cpo:EndorsementRelease": {
+      "@id": "cpo:EndorsementRelease",
+      "@type": "@id"
+    },
+    "cpo:FundraisingRelease": {
+      "@id": "cpo:FundraisingRelease",
+      "@type": "@id"
+    },
+    "cpo:PolicyRelease": {
+      "@id": "cpo:PolicyRelease",
+      "@type": "@id"
+    },
+    "cpo:ContrastRelease": {
+      "@id": "cpo:ContrastRelease",
+      "@type": "@id"
+    },
+    "cpo:CrisisRelease": {
+      "@id": "cpo:CrisisRelease",
+      "@type": "@id"
+    },
+    "cpo:MobilizationRelease": {
+      "@id": "cpo:MobilizationRelease",
+      "@type": "@id"
+    },
+    "cpo:OperationsRelease": {
+      "@id": "cpo:OperationsRelease",
+      "@type": "@id"
+    },
+    "cpo:Claim": {
+      "@id": "cpo:Claim",
+      "@type": "@id"
+    },
+    "cpo:Evidence": {
+      "@id": "cpo:Evidence",
+      "@type": "@id"
+    },
+    "cpo:AudienceProfile": {
+      "@id": "cpo:AudienceProfile",
+      "@type": "@id"
+    },
+    "cpo:CTA": {
+      "@id": "cpo:CTA",
+      "@type": "@id"
+    },
+    "cpo:releaseType": {
+      "@id": "cpo:releaseType"
+    },
+    "cpo:subtype": {
+      "@id": "cpo:subtype"
+    },
+    "cpo:tone": {
+      "@id": "cpo:tone"
+    },
+    "cpo:issueArea": {
+      "@id": "cpo:issueArea"
+    },
+    "cpo:claims": {
+      "@id": "cpo:claims",
+      "@container": "@set"
+    },
+    "cpo:claimText": {
+      "@id": "cpo:claimText"
+    },
+    "cpo:claimDate": {
+      "@id": "cpo:claimDate",
+      "@type": "schema:Date"
+    },
+    "cpo:evidence": {
+      "@id": "cpo:evidence",
+      "@container": "@set"
+    },
+    "cpo:excerpt": {
+      "@id": "cpo:excerpt"
+    },
+    "cpo:audiences": {
+      "@id": "cpo:audiences",
+      "@container": "@set"
+    },
+    "cpo:cta": {
+      "@id": "cpo:cta"
+    },
+    "cpo:type": {
+      "@id": "cpo:type"
+    },
+    "cpo:goal": {
+      "@id": "cpo:goal"
+    },
+    "cpo:distribution": {
+      "@id": "cpo:distribution",
+      "@container": "@set"
+    },
+    "cpo:provenance": {
+      "@id": "cpo:provenance"
+    },
+    "cpo:createdBy": {
+      "@id": "cpo:createdBy"
+    },
+    "cpo:reviewedBy": {
+      "@id": "cpo:reviewedBy"
+    },
+    "cpo:reviewDate": {
+      "@id": "cpo:reviewDate",
+      "@type": "schema:Date"
+    },
+    "cpo:policyCheck": {
+      "@id": "cpo:policyCheck",
+      "@container": "@set"
+    },
+    "cpo:qualityScore": {
+      "@id": "cpo:qualityScore",
+      "@type": "schema:Number"
+    },
+    "cpo:labelId": {
+      "@id": "cpo:labelId"
+    }
+  }
+}

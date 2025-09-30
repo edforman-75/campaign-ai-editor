@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CPO — Domain Allowlist Editor</title><link rel="stylesheet" href="styles.css"/></head>
+<body><div class="header"><h1>Domain Allowlist Editor</h1><p>Edit the approved CTA domains used by the linter.</p></div>
+<div class="container" style="grid-template-columns:1fr">
+<section class="section"><h2>Allowed Domains</h2><div id="list"></div>
+<div style="margin-top:12px">
+<input id="newDomain" placeholder="add domain e.g. secure.actblue.com" style="padding:8px;border-radius:8px;border:1px solid #1e2a44;background:#0a1220;color:#e6edf3;width:60%"/>
+<button class="btn" onclick="addDomain()">Add</button>
+<button class="btn" onclick="download()">Download JSON</button>
+</div>
+<p class="small" style="margin-top:12px">Save as <code>domain_allowlist.json</code> and commit to your repo. CI can pass it to the linter: <code>--allowed $(jq -r '.allowed_domains|join(",")' domain_allowlist.json)</code></p>
+</section></div>
+<script>
+let data = {"schema_version": "1.0.0", "allowed_domains": ["janesmithforcongress.org", "secure.actblue.com", "fec.gov", "cleveland.example.gov"]};
+function render(){
+  const el = document.getElementById('list');
+  el.innerHTML='';
+  (data.allowed_domains||[]).forEach((d,i)=>{
+    const span=document.createElement('span'); span.className='btn'; span.textContent=d+' ✕';
+    span.style.marginRight='6px'; span.onclick=()=>{data.allowed_domains.splice(i,1);render();};
+    el.appendChild(span);
+  });
+}
+function addDomain(){
+  const val = document.getElementById('newDomain').value.trim();
+  if(!val) return;
+  data.allowed_domains = data.allowed_domains || [];
+  if(!data.allowed_domains.includes(val)) data.allowed_domains.push(val);
+  document.getElementById('newDomain').value=''; render();
+}
+function download(){
+  const a=document.createElement('a');
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  a.href=URL.createObjectURL(blob); a.download='domain_allowlist.json'; a.click();
+}
+render();
+</script></body></html>

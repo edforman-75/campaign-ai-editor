@@ -1,0 +1,21 @@
+{
+  "title": "Candidate Sarah Johnson Announces Comprehensive Healthcare Reform Plan",
+  "subtitle": "Plan includes universal coverage and prescription drug cost reduction",
+  "date": "2024-10-15",
+  "location": "Springfield, IL",
+  "content": {
+    "headline": "Johnson Unveils Bold Healthcare Initiative to Lower Costs for Working Families",
+    "body": "Today, candidate Sarah Johnson announced her comprehensive healthcare reform plan that will provide universal coverage while reducing prescription drug costs by up to 60%. The plan builds on existing programs while introducing innovative cost-saving measures. \"Healthcare is a right, not a privilege,\" Johnson stated at today's press conference. \"My plan will ensure every family in our district can afford the care they need without going bankrupt.\" The proposal includes provisions for negotiating prescription drug prices, expanding community health centers, and creating a public option for health insurance.",
+    "quote": "Healthcare is a right, not a privilege. My plan will ensure every family in our district can afford the care they need without going bankrupt.",
+    "attribution": "Sarah Johnson, Candidate for Congress"
+  },
+  "contacts": {
+    "press": "press@johnsonforcongress.com",
+    "campaign": "info@johnsonforcongress.com"
+  },
+  "metadata": {
+    "tags": ["healthcare", "policy", "reform"],
+    "category": "policy_announcement",
+    "priority": "high"
+  }
+}

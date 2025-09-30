@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "required": [
+    "title",
+    "date",
+    "content"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 10
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "location": {
+      "type": "string"
+    },
+    "content": {
+      "type": "object",
+      "required": [
+        "headline",
+        "body"
+      ],
+      "properties": {
+        "headline": {
+          "type": "string",
+          "minLength": 20
+        },
+        "body": {
+          "type": "string",
+          "minLength": 100
+        },
+        "quote": {
+          "type": "string"
+        },
+        "attribution": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

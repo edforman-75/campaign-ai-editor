@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><title>Adversarial Test</title>
+</head><body>
+<main>
+<article>
+CLEVELAND — John Doe backed legislation to expand tax breaks for oil companies.<br/>
+<br/>
+Jane Smith called for redirecting subsidies to local training.
+</article>
+</main>
+<script type="application/ld+json">
+{
+  "@context": [
+    "https://schema.org",
+    "https://campaign-press-ontology.org/ns/v1#"
+  ],
+  "@type": [
+    "PressRelease"
+  ],
+  "@id": "https://janesmithforcongress.org/press/test-att-pol-vote-evidence_insufficient-1",
+  "headline": "Jane Smith Announces Weekend Rally at Mall B",
+  "datePublished": "2025-10-01",
+  "author": {
+    "@type": "Organization",
+    "name": "Jane Smith for Congress",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "press",
+      "email": "press@janesmithforcongress.org"
+    }
+  },
+  "articleBody": "CLEVELAND \u2014 Jane Smith will headline a rally this Saturday at Mall B at 3:00 PM.",
+  "cpo:subtype": "ATT.POL.VOTE",
+  "cpo:releaseType": "contrast",
+  "cpo:cta": {
+    "@type": "cpo:CTA",
+    "cpo:type": "rsvp",
+    "url": "https://janesmithforcongress.org/rsvp/cleveland-rally"
+  },
+  "cpo:claims": [
+    {
+      "@type": "cpo:Claim",
+      "@id": "claim:sensitive-1",
+      "cpo:claimText": "John Doe made discriminatory remarks on 05/02/2024.",
+      "cpo:evidence": [
+        {
+          "@type": "CreativeWork",
+          "url": "https://news.example.com/story"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</body></html>
