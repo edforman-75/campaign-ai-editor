@@ -1,85 +1,75 @@
-<!doctype html><html><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>CPO Docs — Campaign Press Ontology</title>
-<link rel="stylesheet" href="styles.css"/></head><body>
-<div class="header"><h1>Campaign Press Ontology (CPO) — Documentation Portal</h1>
-<p>Neutral, dual-layer JSON-LD (schema.org + CPO) with parity checks, validation, governance, and evidence-backed claims.</p></div>
-<div class="container">
-<nav class="nav">
-<a href="#overview">Overview</a>
-<a href="#core">Core Files</a>
-<a href="#templates">Templates</a>
-<a href="#profiles">Subtype Profiles & Fragments</a>
-<a href="#claims">ClaimReview & Registry</a>
-<a href="#validation">Validation & Linter</a>
-<a href="#workflow">Authoring Workflow</a>
-<a href="#download">Download All</a>
-</nav>
-<main>
-<section class="section" id="overview">
-<h2>Overview</h2>
-<p>This portal consolidates the neutral, dual-layer JSON-LD system (schema.org core + CPO extension) with tooling for parity checks, validation, governance, and evidence-backed claims — designed so platforms won’t ignore it and your labeling remains neutral.</p>
-</section>
-<section class="section" id="core"><h2>Core Files</h2>
-<div class="grid">
-  <a class="btn" href="sandbox:/mnt/data/cpo_context_v1.jsonld">CPO Context (v1)</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_jsonschema_v1.json">CPO JSON Schema</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_shacl_v1.ttl">CPO SHACL Shapes</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_authoring_checklist.md">Authoring Checklist</a>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CPO Portal — Templates, Examples, Tools</title>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="header">
+  <h1>CPO Portal</h1>
+  <p class="small">Campaign Press Office — templates, examples, docs & tools</p>
 </div>
-<div class="grid" style="margin-top:12px">
-  <a class="btn" href="sandbox:/mnt/data/cpo_examples/contrast_release.jsonld">Example: Contrast</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_examples/rally_release.jsonld">Example: Rally</a>
-</div>
-</section>
-<section class="section" id="templates"><h2>Templates</h2>
-<div class="grid">
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/policy_release.jsonld">Policy Release</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/endorsement_release.jsonld">Endorsement</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/fundraising_release.jsonld">Fundraising</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/crisis_release.jsonld">Crisis / Clarification</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/mobilization_release.jsonld">Mobilization</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/operations_release.jsonld">Operations (Polling)</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/news_article_variant.jsonld">NewsArticle Variant</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/claimreview_template.jsonld">ClaimReview Template</a>
-</div>
-</section>
-<section class="section" id="profiles"><h2>Subtype Profiles & JSON Schema Fragments</h2>
-<p>Profiles define required fields; fragments add hard validation (e.g., events require an embedded <code>Event</code>).</p>
-<div class="grid"><a class="btn" href="sandbox:/mnt/data/cpo_subtype_profiles.json">Subtype Profiles (JSON)</a></div>
-<ul>
 
-</ul>
-</section>
-<section class="section" id="claims"><h2>ClaimReview & Claims Registry</h2>
-<div class="grid">
-  <a class="btn" href="sandbox:/mnt/data/claims_registry.json">Claims Registry</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/claimreview_template.jsonld">ClaimReview Template</a>
+<div class="container">
+
+  <div class="card">
+    <h2>Documentation</h2>
+    <p>Start here to understand structure and workflow.</p>
+    <div class="grid">
+      <a class="btn" href="../docs/README.md">Top-level Docs (docs/README.md)</a>
+      <a class="btn" href="../cpo_templates/README.md">Templates README</a>
+      <a class="btn" href="../cpo_examples/README.md">Examples README</a>
+    </div>
+    <p class="small">Tip: Open these in GitHub or your code viewer to see the Markdown rendered.</p>
+  </div>
+
+  <div class="card">
+    <h2>Authoring Templates</h2>
+    <p>JSON-LD scaffolds for each release type.</p>
+    <div class="grid">
+      <a class="btn" href="../cpo_templates/press_release_template.jsonld">Generic PressRelease</a>
+      <a class="btn" href="../cpo_templates/statement_template.jsonld">Statement</a>
+      <a class="btn" href="../cpo_templates/policy_release.jsonld">Policy Rollout</a>
+      <a class="btn" href="../cpo_templates/endorsement_release.jsonld">Endorsement</a>
+      <a class="btn" href="../cpo_templates/fundraising_release.jsonld">Fundraising</a>
+      <a class="btn" href="../cpo_templates/crisis_release.jsonld">Crisis/Clarification</a>
+      <a class="btn" href="../cpo_templates/mobilization_release.jsonld">Mobilization</a>
+      <a class="btn" href="../cpo_templates/operations_release.jsonld">Operations</a>
+      <a class="btn" href="../cpo_templates/news_article_variant.jsonld">NewsArticle variant</a>
+      <a class="btn" href="../cpo_templates/claimreview_template.jsonld">ClaimReview</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Examples</h2>
+    <p>Reference implementations to test linting/validation.</p>
+    <div class="grid">
+      <a class="btn" href="../cpo_examples/rally_release.jsonld">Rally (ANN.EVT.RALLY)</a>
+      <a class="btn" href="../cpo_examples/contrast_release.jsonld">Contrast (ATT.OPP.CHAR)</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Interactive Tools</h2>
+    <p>Edit allowlist & explore subtype profiles.</p>
+    <div class="grid">
+      <a class="btn" href="allowlist_editor.html">Domain Allowlist Editor</a>
+      <a class="btn" href="profiles_viewer.html">Subtype Profiles Viewer</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>CI Status</h2>
+    <p class="small">Badge location in repo (renders on GitHub README from <code>main</code>):</p>
+    <div class="badge">badges/adversarial_badge.svg</div>
+    <p class="small">Workflow: <code>.github/workflows/adversarial-tests.yml</code></p>
+  </div>
+
 </div>
-</section>
-<section class="section" id="validation"><h2>Validation & Linter</h2>
-<div class="grid">
-  <a class="btn" href="sandbox:/mnt/data/cpo_linter.py">Linter (Python)</a>
-  <a class="btn" href="sandbox:/mnt/data/.github/workflows/cpo-validate.yml">GitHub Actions Workflow</a>
-  <a class="btn" href="sandbox:/mnt/data/cpo_templates/README_EXTENDED_LINTER.md">Linter Notes</a>
+
+<div class="footer">
+  Updated 2025-09-30 · CPO Portal
 </div>
-<pre><code>python cpo_linter.py release.jsonld \
-  --schema cpo_jsonschema_v1.json \
-  --profiles cpo_subtype_profiles.json \
-  --allowed janesmithforcongress.org,secure.actblue.com \
-  --min-evidence 2</code></pre>
-</section>
-<section class="section" id="workflow"><h2>Authoring Workflow</h2>
-<ol>
-<li>Draft release text.</li>
-<li>Choose subtype template; add JSON-LD.</li>
-<li>Register claims; attach evidence.</li>
-<li>Run linter locally; fix issues.</li>
-<li>Commit & open PR; CI validates.</li>
-<li>Publish to site; update registry.</li>
-</ol>
-</section>
-<section class="section" id="download"><h2>Download All</h2>
-<p><a class="btn" href="cpo_docs_bundle.zip">Download ZIP</a></p>
-</section>
-</main></div></body></html>
+
+</body></html>
