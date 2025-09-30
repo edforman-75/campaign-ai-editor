@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Press Release Editor — CPO</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.panel{background:#111a2e;border:1px solid #182544;border-radius:16px;padding:20px}
+.form-group{margin-bottom:16px}
+label{display:block;margin-bottom:6px;color:#9fb3c8;font-size:13px;font-weight:500}
+input[type=text],input[type=date],input[type=url],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f4366;background:#0a1220;color:#e6edf3;font-family:inherit;font-size:14px}
+textarea{min-height:100px;font-family:monospace;resize:vertical}
+button{padding:10px 16px;border-radius:8px;background:#0e2a42;border:1px solid #1f4366;color:#e6edf3;cursor:pointer;font-size:14px}
+button.primary{background:#1f4366;border:1px solid #2d5a8a}
+button:hover{opacity:0.9}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+pre{background:#0b1220;padding:16px;border-radius:10px;border:1px dashed #2b3a55;overflow:auto;max-height:600px;font-size:12px;line-height:1.5}
+.validation{margin-top:12px;padding:12px;border-radius:8px;font-size:13px}
+.validation.success{background:#0d2818;border:1px solid #1a4d2e;color:#7dfca5}
+.validation.error{background:#2d1515;border:1px solid#4d1a1a;color:#ff7b7b}
+.validation.warning{background:#2d2415;border:1px solid #4d3d1a;color:#ffb86c}
+.claim-item{background:#0b1220;padding:12px;border-radius:8px;border:1px solid #182544;margin-bottom:12px}
+.claim-item button{font-size:12px;padding:6px 10px}
+.add-btn{margin-top:8px}
+h2{margin:0 0 16px 0;font-size:18px}
+.small{font-size:12px;color:#9fb3c8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Press Release Editor</h1>
+  <p class="small">Create and validate press releases using CPO templates.</p>
+
+  <div class="layout">
+    <!-- LEFT: Form -->
+    <div class="panel">
+      <h2>Edit Release</h2>
+
+      <div class="form-group">
+        <label>Template Type</label>
+        <select id="templateType">
+          <option value="press_release">Generic Press Release</option>
+          <option value="statement">Statement</option>
+          <option value="policy">Policy Rollout</option>
+          <option value="endorsement">Endorsement</option>
+          <option value="fundraising">Fundraising</option>
+          <option value="crisis">Crisis/Clarification</option>
+          <option value="mobilization">Mobilization</option>
+          <option value="operations">Operations</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Headline *</label>
+        <input type="text" id="headline" placeholder="Jane Smith Releases Clean Energy Plan" />
+      </div>
+
+      <div class="form-group">
+        <label>Date Published *</label>
+        <input type="date" id="datePublished" />
+      </div>
+
+      <div class="form-group">
+        <label>Campaign Name *</label>
+        <input type="text" id="campaignName" placeholder="Jane Smith for Congress" />
+      </div>
+
+      <div class="form-group">
+        <label>Campaign URL *</label>
+        <input type="url" id="campaignUrl" placeholder="https://janesmithforcongress.org" />
+      </div>
+
+      <div class="form-group">
+        <label>Press Contact Email *</label>
+        <input type="text" id="pressEmail" placeholder="press@janesmithforcongress.org" />
+      </div>
+
+      <div class="form-group">
+        <label>Article Body *</label>
+        <textarea id="articleBody" placeholder="CLEVELAND — Jane Smith today announced..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Issue Area (optional)</label>
+        <input type="text" id="issueArea" placeholder="environment, healthcare, economy..." />
+      </div>
+
+      <div class="form-group">
+        <label>Subtype Code (optional)</label>
+        <input type="text" id="subtype" placeholder="POL.ROL.CE" />
+      </div>
+
+      <div class="form-group">
+        <label>Claims & Evidence (optional)</label>
+        <div id="claimsContainer"></div>
+        <button class="add-btn" onclick="addClaim()">+ Add Claim</button>
+      </div>
+
+      <div class="form-group">
+        <label>Call to Action URL (optional)</label>
+        <input type="url" id="ctaUrl" placeholder="https://janesmithforcongress.org/plan" />
+      </div>
+
+      <div class="form-group">
+        <label>Or Paste Text Press Release</label>
+        <textarea id="pasteArea" placeholder="Paste your plain text press release here and click 'Parse'..." style="min-height:150px"></textarea>
+        <button class="add-btn" onclick="parsePastedRelease()">Parse & Fill Form</button>
+      </div>
+
+      <div class="btn-group">
+        <button class="primary" onclick="generateRelease()">Generate JSON-LD</button>
+        <button onclick="validateRelease()">Validate</button>
+        <button onclick="downloadRelease()">Download</button>
+        <button onclick="clearForm()">Clear</button>
+      </div>
+
+      <div id="validation"></div>
+    </div>
+
+    <!-- RIGHT: Preview -->
+    <div class="panel">
+      <h2>JSON-LD Preview</h2>
+      <pre id="jsonPreview">{
+  "Click 'Generate JSON-LD' to see preview"
+}</pre>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:24px">
+    <a href="./index.html" style="color:#7dfca5">← Back to Portal Home</a>
+  </div>
+</div>
+
+<script>
+let claimCounter = 0;
+
+// Set today's date by default
+document.getElementById('datePublished').valueAsDate = new Date();
+
+function addClaim() {
+  const container = document.getElementById('claimsContainer');
+  const id = ++claimCounter;
+
+  const div = document.createElement('div');
+  div.className = 'claim-item';
+  div.id = `claim-${id}`;
+  div.innerHTML = `
+    <div style="margin-bottom:8px">
+      <input type="text" id="claimText-${id}" placeholder="Claim text" style="margin-bottom:8px" />
+      <input type="url" id="evidenceUrl-${id}" placeholder="Evidence URL" style="margin-bottom:8px" />
+      <input type="text" id="evidenceExcerpt-${id}" placeholder="Evidence excerpt (optional)" />
+    </div>
+    <button onclick="removeClaim(${id})">Remove</button>
+  `;
+  container.appendChild(div);
+}
+
+function removeClaim(id) {
+  document.getElementById(`claim-${id}`).remove();
+}
+
+function generateRelease() {
+  const type = document.getElementById('templateType').value;
+  const headline = document.getElementById('headline').value.trim();
+  const datePublished = document.getElementById('datePublished').value;
+  const campaignName = document.getElementById('campaignName').value.trim();
+  const campaignUrl = document.getElementById('campaignUrl').value.trim();
+  const pressEmail = document.getElementById('pressEmail').value.trim();
+  const articleBody = document.getElementById('articleBody').value.trim();
+  const issueArea = document.getElementById('issueArea').value.trim();
+  const subtype = document.getElementById('subtype').value.trim();
+  const ctaUrl = document.getElementById('ctaUrl').value.trim();
+
+  // Validate required fields
+  if (!headline || !datePublished || !campaignName || !campaignUrl || !pressEmail || !articleBody) {
+    showValidation('Please fill in all required fields (*)', 'error');
+    return;
+  }
+
+  // Build release object
+  const release = {
+    "@context": [
+      "https://schema.org",
+      "https://campaign-press-ontology.org/ns/v1#"
+    ],
+    "@type": ["PressRelease", "NewsArticle"],
+    "@id": campaignUrl + "/press/" + datePublished.replace(/-/g, ''),
+    "headline": headline,
+    "datePublished": datePublished,
+    "author": {
+      "@type": "Organization",
+      "name": campaignName,
+      "url": campaignUrl,
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "press",
+        "email": pressEmail
+      }
+    },
+    "articleBody": articleBody,
+    "cpo:releaseType": type
+  };
+
+  // Add optional fields
+  if (issueArea) release["cpo:issueArea"] = issueArea;
+  if (subtype) release["cpo:subtype"] = subtype;
+
+  // Add claims
+  const claims = [];
+  const claimItems = document.querySelectorAll('.claim-item');
+  claimItems.forEach((item, idx) => {
+    const id = item.id.split('-')[1];
+    const claimText = document.getElementById(`claimText-${id}`).value.trim();
+    const evidenceUrl = document.getElementById(`evidenceUrl-${id}`).value.trim();
+    const evidenceExcerpt = document.getElementById(`evidenceExcerpt-${id}`).value.trim();
+
+    if (claimText && evidenceUrl) {
+      const claim = {
+        "@type": "cpo:Claim",
+        "@id": `claim:${idx + 1}`,
+        "cpo:claimText": claimText,
+        "cpo:evidence": [{
+          "@type": "CreativeWork",
+          "url": evidenceUrl
+        }]
+      };
+      if (evidenceExcerpt) {
+        claim["cpo:evidence"][0]["cpo:excerpt"] = evidenceExcerpt;
+      }
+      claims.push(claim);
+    }
+  });
+  if (claims.length > 0) release["cpo:claims"] = claims;
+
+  // Add CTA
+  if (ctaUrl) {
+    release["cpo:cta"] = {
+      "@type": "cpo:CTA",
+      "cpo:type": "learn",
+      "url": ctaUrl
+    };
+  }
+
+  // Display
+  const json = JSON.stringify(release, null, 2);
+  document.getElementById('jsonPreview').textContent = json;
+  showValidation('JSON-LD generated successfully!', 'success');
+}
+
+function validateRelease() {
+  const preview = document.getElementById('jsonPreview').textContent;
+
+  try {
+    const release = JSON.parse(preview);
+
+    // Basic validation
+    const errors = [];
+    const warnings = [];
+
+    if (!release["@context"]) errors.push("Missing @context");
+    if (!release["@type"]) errors.push("Missing @type");
+    if (!release.headline) errors.push("Missing headline");
+    if (!release.datePublished) errors.push("Missing datePublished");
+    if (!release.author) errors.push("Missing author");
+    if (!release.articleBody) errors.push("Missing articleBody");
+
+    if (release["cpo:claims"]) {
+      release["cpo:claims"].forEach((claim, idx) => {
+        if (!claim["cpo:claimText"]) errors.push(`Claim ${idx + 1}: missing claimText`);
+        if (!claim["cpo:evidence"] || claim["cpo:evidence"].length === 0) {
+          errors.push(`Claim ${idx + 1}: missing evidence`);
+        }
+      });
+    }
+
+    if (errors.length > 0) {
+      showValidation('Validation errors:\n' + errors.join('\n'), 'error');
+    } else if (warnings.length > 0) {
+      showValidation('Validation passed with warnings:\n' + warnings.join('\n'), 'warning');
+    } else {
+      showValidation('✓ Validation passed! Ready to publish.', 'success');
+    }
+  } catch (e) {
+    showValidation('Invalid JSON: ' + e.message, 'error');
+  }
+}
+
+function downloadRelease() {
+  const preview = document.getElementById('jsonPreview').textContent;
+  const headline = document.getElementById('headline').value.trim() || 'release';
+  const filename = headline.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.jsonld';
+
+  const blob = new Blob([preview], {type: 'application/ld+json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  showValidation('Downloaded: ' + filename, 'success');
+}
+
+function clearForm() {
+  if (!confirm('Clear all fields?')) return;
+  document.getElementById('headline').value = '';
+  document.getElementById('articleBody').value = '';
+  document.getElementById('campaignName').value = '';
+  document.getElementById('campaignUrl').value = '';
+  document.getElementById('pressEmail').value = '';
+  document.getElementById('issueArea').value = '';
+  document.getElementById('subtype').value = '';
+  document.getElementById('ctaUrl').value = '';
+  document.getElementById('claimsContainer').innerHTML = '';
+  document.getElementById('jsonPreview').textContent = '{\n  "Click \'Generate JSON-LD\' to see preview"\n}';
+  showValidation('Form cleared', '');
+}
+
+function showValidation(message, type) {
+  const div = document.getElementById('validation');
+  div.textContent = message;
+  div.className = 'validation ' + type;
+  div.style.display = message ? 'block' : 'none';
+}
+
+function parsePastedRelease() {
+  const text = document.getElementById('pasteArea').value.trim();
+  if (!text) {
+    showValidation('Please paste a press release first', 'error');
+    return;
+  }
+
+  // Extract headline (usually first line or in caps/bold)
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  let headline = lines[0];
+
+  // Look for "FOR IMMEDIATE RELEASE" pattern and skip it
+  if (headline.toUpperCase().includes('FOR IMMEDIATE RELEASE')) {
+    headline = lines[1] || lines[0];
+  }
+
+  // Extract date (look for patterns like "January 15, 2025" or "2025-01-15")
+  let datePublished = '';
+  const datePatterns = [
+    /(\w+\s+\d{1,2},\s+\d{4})/,  // January 15, 2025
+    /(\d{4}-\d{2}-\d{2})/,        // 2025-01-15
+    /(\d{1,2}\/\d{1,2}\/\d{4})/   // 1/15/2025
+  ];
+
+  for (const line of lines) {
+    for (const pattern of datePatterns) {
+      const match = line.match(pattern);
+      if (match) {
+        const dateStr = match[1];
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed)) {
+          datePublished = parsed.toISOString().split('T')[0];
+          break;
+        }
+      }
+    }
+    if (datePublished) break;
+  }
+
+  // Extract campaign name and email (look for patterns)
+  let campaignName = '';
+  let pressEmail = '';
+  let campaignUrl = '';
+
+  for (const line of lines) {
+    // Look for "Contact:" or email patterns
+    if (line.toLowerCase().includes('contact:')) {
+      const emailMatch = line.match(/[\w.-]+@[\w.-]+\.\w+/);
+      if (emailMatch) pressEmail = emailMatch[0];
+
+      // Try to extract name before contact
+      const nameMatch = line.match(/^(.+?)\s*[-—]\s*Contact:/i);
+      if (nameMatch) campaignName = nameMatch[1].trim();
+    }
+
+    // Look for URLs
+    const urlMatch = line.match(/https?:\/\/[\w.-]+\.\w+[\w\/.?=&-]*/);
+    if (urlMatch && !campaignUrl) {
+      campaignUrl = urlMatch[0].split(/[,\s]/)[0]; // Take first URL, remove trailing punctuation
+    }
+
+    // Look for "for Congress", "for Senate", etc.
+    const forMatch = line.match(/(.+?)\s+for\s+(Congress|Senate|Governor|Mayor)/i);
+    if (forMatch && !campaignName) {
+      campaignName = forMatch[0].trim();
+    }
+  }
+
+  // Article body is everything after the first few header lines
+  let bodyStartIdx = 1;
+  if (lines[0].toUpperCase().includes('FOR IMMEDIATE RELEASE')) bodyStartIdx++;
+  if (lines[bodyStartIdx] && lines[bodyStartIdx].match(/\w+\s+\d{1,2},\s+\d{4}/)) bodyStartIdx++;
+
+  const articleBody = lines.slice(bodyStartIdx).join('\n\n');
+
+  // Fill form
+  document.getElementById('headline').value = headline;
+  if (datePublished) document.getElementById('datePublished').value = datePublished;
+  if (campaignName) document.getElementById('campaignName').value = campaignName;
+  if (campaignUrl) document.getElementById('campaignUrl').value = campaignUrl;
+  if (pressEmail) document.getElementById('pressEmail').value = pressEmail;
+  document.getElementById('articleBody').value = articleBody;
+
+  // Clear paste area
+  document.getElementById('pasteArea').value = '';
+
+  showValidation('Parsed! Review and adjust fields as needed, then click Generate JSON-LD', 'success');
+}
+</script>
+</body></html>
