@@ -1,0 +1,8 @@
+theme: jekyll-theme-cayman
+title: CPO Portal
+description: Campaign Press Office templates, examples, and tools
+# Ensure GitHub Pages includes these paths if needed
+include:
+  - ../cpo_templates
+  - ../cpo_examples
+  - ../cpo_docs
