@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "allowed_domains": [
+    "janesmithforcongress.org",
+    "secure.actblue.com",
+    "fec.gov",
+    "cleveland.example.gov"
+  ]
+}
