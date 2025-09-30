@@ -37,7 +37,18 @@ See [cpo_examples/README.md](../cpo_examples/README.md) for details.
 
 ---
 
-## 🛠 Usage
+## 🛠 Tools Documentation
+
+Interactive browser-based tools for managing CPO configuration:
+
+- [**Tools README**](../cpo_docs/TOOLS_README.md) — Overview of available tools
+- [**Tools User Guide**](../cpo_docs/TOOLS_USER_GUIDE.md) — Step-by-step instructions for:
+  - Domain Allowlist Editor
+  - Subtype Profiles Viewer
+
+---
+
+## 📖 Usage
 
 1. **Choose a template** from `cpo_templates/`.
 2. Fill in placeholders (`<slug>`, `<headline>`, etc.) with campaign data.
