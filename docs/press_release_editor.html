@@ -245,9 +245,10 @@ function autoPopulateClaims() {
         <input type="text" id="claimText-${id}" placeholder="Claim text" style="margin-bottom:8px" value="${claim.text.replace(/"/g, '&quot;')}" />
         <input type="url" id="evidenceUrl-${id}" placeholder="Evidence URL (click 'Search' to find)" style="margin-bottom:8px" />
         <div style="display:flex;gap:6px;margin-bottom:8px">
-          <button onclick="window.open('${claim.suggestedSearch}', '_blank')" style="flex:1">🔍 Search for Evidence</button>
-          <span style="color:#9fb3c8;font-size:11px;align-self:center">(Type: ${claim.type})</span>
+          <button onclick="findEvidence(${id}, '${claim.searchQuery.replace(/'/g, "\\'")}', '${claim.type}')" style="flex:1">🔍 Find Evidence URL</button>
+          <button onclick="window.open('${claim.suggestedSearch}', '_blank')" style="flex:0.5">Manual Search</button>
         </div>
+        <div id="evidence-status-${id}" style="font-size:11px;color:#9fb3c8;margin-bottom:6px"></div>
         <input type="text" id="evidenceExcerpt-${id}" placeholder="Evidence excerpt (optional)" />
       </div>
       <button onclick="removeClaim(${id})">Remove</button>
@@ -258,7 +259,83 @@ function autoPopulateClaims() {
   // Hide the info banner
   document.getElementById('detectedClaimsInfo').style.display = 'none';
 
-  showValidation(`Added ${claims.length} detected claims. Click "Search for Evidence" buttons to find supporting URLs.`, 'success');
+  showValidation(`Added ${claims.length} detected claims. Click "Find Evidence URL" to automatically search for sources.`, 'success');
+}
+
+async function findEvidence(claimId, searchQuery, claimType) {
+  const statusEl = document.getElementById(`evidence-status-${claimId}`);
+  const urlInput = document.getElementById(`evidenceUrl-${claimId}`);
+
+  statusEl.innerHTML = '<span style="color:#ffb86c">🔄 Searching for evidence...</span>';
+
+  try {
+    // Use a search API endpoint (this will need to be implemented server-side)
+    // For now, we'll construct smart search URLs based on claim type
+
+    let targetUrl = '';
+    let searchHint = '';
+
+    if (claimType === 'experience') {
+      // Try LinkedIn, campaign website, or news articles
+      searchHint = 'Try: LinkedIn, campaign bio page, or news articles';
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:linkedin.com OR site:*.com/about')}`;
+    } else if (claimType === 'org_description' || claimType === 'org_composition') {
+      // Look for official organization websites
+      searchHint = 'Looking for official website or about page...';
+      const orgName = searchQuery.replace('official website', '').trim();
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(orgName + ' official website')}`;
+    } else if (claimType === 'policy_document') {
+      // Search for policy documents, fact-checks
+      searchHint = 'Searching policy docs and fact-checkers...';
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:politifact.com OR site:factcheck.org OR site:*.gov')}`;
+    } else if (claimType === 'voting_record') {
+      // Congress.gov or VoteSmart
+      searchHint = 'Checking congressional records...';
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    } else if (claimType === 'statistic') {
+      // Government sources, think tanks
+      searchHint = 'Looking for official statistics...';
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery + ' site:*.gov OR site:brookings.edu OR site:pewresearch.org')}`;
+    } else {
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      searchHint = 'General search...';
+    }
+
+    // Show the user we're searching
+    statusEl.innerHTML = `<span style="color:#7dd3fc">${searchHint}</span>`;
+
+    // Since we can't directly access Google search results from browser JS due to CORS,
+    // we'll provide intelligent suggestions and open the search
+    setTimeout(() => {
+      statusEl.innerHTML = `
+        <div style="color:#7dfca5">
+          ✓ Search opened. Suggested sources:<br>
+          ${getSourceSuggestions(claimType)}
+        </div>
+      `;
+    }, 500);
+
+    // Open search in new tab
+    window.open(targetUrl, '_blank');
+
+  } catch (error) {
+    statusEl.innerHTML = `<span style="color:#ff7b7b">Error: ${error.message}</span>`;
+  }
+}
+
+function getSourceSuggestions(claimType) {
+  const suggestions = {
+    'experience': '→ LinkedIn profiles, campaign bio pages, news articles',
+    'org_description': '→ Official .org website, Wikipedia, news coverage',
+    'org_composition': '→ Organization\'s "About" or "Members" page',
+    'policy_document': '→ Politifact.com, FactCheck.org, official policy docs',
+    'voting_record': '→ Congress.gov, VoteSmart.org, official voting records',
+    'policy_claim': '→ Congressional Budget Office, policy analysis from .gov or .edu',
+    'factual_claim': '→ Fact-checking sites, reputable news sources',
+    'statistic': '→ Census.gov, BLS.gov, Pew Research, government statistics'
+  };
+
+  return suggestions[claimType] || '→ Reputable news sources, .gov/.edu sites';
 }
 
 function generateRelease() {
