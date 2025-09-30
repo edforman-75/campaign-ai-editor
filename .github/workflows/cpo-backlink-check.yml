@@ -1,0 +1,16 @@
+name: CPO Backlink Check
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  backlink-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run backlink checker
+        run: |
+          chmod +x scripts/check_backlinks.sh
+          scripts/check_backlinks.sh
