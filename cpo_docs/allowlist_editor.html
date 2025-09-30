@@ -28,6 +28,8 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
 
   <div class="tools">
     <input id="file" type="file" accept=".json">
+    <button id="loadReplace">Load (Replace)</button>
+    <button id="loadMerge">Load (Merge)</button>
     <button id="new">New</button>
     <button id="save">Download JSON</button>
     <button id="copy">Copy JSON</button>
@@ -107,18 +109,43 @@ document.getElementById('save').onclick = ()=>{
   status('Downloaded domain_allowlist.json');
 };
 document.getElementById('copy').onclick = async ()=>{ await navigator.clipboard.writeText(JSON.stringify(model,null,2)); status('Copied JSON'); };
-document.getElementById('file').addEventListener('change', (ev)=>{
-  const f = ev.target.files[0]; if(!f) return;
+
+function loadFile(mode){
+  const fileInput = document.getElementById('file');
+  const f = fileInput.files[0];
+  if(!f){ status('No file selected'); return; }
   const rd = new FileReader();
   rd.onload = ()=>{
     try{
       const data = JSON.parse(rd.result);
-      if(!Array.isArray(data.allowed_domains)){ throw new Error('allowed_domains must be an array'); }
-      model = Object.assign({version:1,notes:""}, data); refresh(); status('Loaded '+f.name);
+      // Extract allowed_domains from various schema formats
+      let domains = [];
+      if(Array.isArray(data.allowed_domains)) domains = data.allowed_domains;
+      else if(data.categories && typeof data.categories === 'object'){
+        // Handle tier1_sources.json format with categories
+        Object.values(data.categories).forEach(arr=>{ if(Array.isArray(arr)) domains.push(...arr); });
+      }
+      if(domains.length === 0){ throw new Error('No allowed_domains found in file'); }
+
+      if(mode === 'replace'){
+        model.allowed_domains = domains;
+        status(`Loaded ${domains.length} domains (replaced)`);
+      } else if(mode === 'merge'){
+        const existing = new Set(model.allowed_domains.map(d=>d.toLowerCase()));
+        const newDomains = domains.filter(d=>!existing.has(d.toLowerCase()));
+        model.allowed_domains.push(...newDomains);
+        status(`Merged ${newDomains.length} new domains (${domains.length - newDomains.length} duplicates skipped)`);
+      }
+      refresh();
+      fileInput.value = ''; // Reset file input
     }catch(e){ status('Error: '+e.message); }
   };
   rd.readAsText(f);
-});
+}
+
+document.getElementById('loadReplace').onclick = ()=>loadFile('replace');
+document.getElementById('loadMerge').onclick = ()=>loadFile('merge');
+
 render();
 </script>
 </body></html>
