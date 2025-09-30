@@ -1,86 +1,80 @@
 name: Adversarial Parity & Validation
 
-  on:
-    pull_request:
-    push:
-      branches: [ main, master ]
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
 
-  jobs:
-    adversarial-tests:
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-        pull-requests: write
-      env:
-        BADGE_PATH: badges/adversarial_badge.svg
+jobs:
+  adversarial-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BADGE_PATH: badges/adversarial_badge.svg
 
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Setup Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: '3.11'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-        - name: Install deps
-          run: |
-            python -m pip install --upgrade pip
-            pip install pytest jsonschema
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest jsonschema
 
-        - name: Run pytest (with JUnit)
-          run: |
-            mkdir -p junit
-            pytest -q adversarial_tests/test_adversarial.py --junitxml=junit/adversarial.xml || 
-  true
+      - name: Run pytest (with JUnit)
+        run: |
+          mkdir -p junit
+          pytest -q adversarial_tests/test_adversarial.py --junitxml=junit/adversarial.xml || true
 
-        - name: Generate badge SVG
-          run: |
-            python adversarial_tests/make_badge.py --junit junit/adversarial.xml --out ${{ 
-  env.BADGE_PATH }} --label adversarial
+      - name: Generate badge SVG
+        run: |
+          python adversarial_tests/make_badge.py --junit junit/adversarial.xml --out ${{ env.BADGE_PATH }} --label adversarial
 
-        - name: Commit badge to main (push workflow)
-          if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref ==
-  'refs/heads/master')
-          uses: stefanzweifel/git-auto-commit-action@v5
-          with:
-            commit_message: "chore(ci): update adversarial badge"
-            file_pattern: ${{ env.BADGE_PATH }}
+      - name: Commit badge to main (push workflow)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(ci): update adversarial badge"
+          file_pattern: ${{ env.BADGE_PATH }}
 
-        - name: Commit badge to PR branch (internal PRs only)
-          if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork ==
-   false
-          uses: stefanzweifel/git-auto-commit-action@v5
-          with:
-            commit_message: "chore(ci): update adversarial badge for PR"
-            file_pattern: ${{ env.BADGE_PATH }}
-            commit_user_name: "github-actions[bot]"
-            commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
-            branch: ${{ github.head_ref }}
+      - name: Commit badge to PR branch (internal PRs only)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(ci): update adversarial badge for PR"
+          file_pattern: ${{ env.BADGE_PATH }}
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          branch: ${{ github.head_ref }}
 
-        - name: Compute badge URL
-          id: badgeurl
-          run: |
-            REF="${{ github.head_ref || github.ref_name }}"
-            echo "url=https://raw.githubusercontent.com/${{ github.repository }}/${REF}/${{ 
-  env.BADGE_PATH }}" >> $GITHUB_OUTPUT
+      - name: Compute badge URL
+        id: badgeurl
+        run: |
+          REF="${{ github.head_ref || github.ref_name }}"
+          echo "url=https://raw.githubusercontent.com/${{ github.repository }}/${REF}/${{ env.BADGE_PATH }}" >> $GITHUB_OUTPUT
 
-        - name: Create/Update sticky PR comment with badge
-          if: github.event_name == 'pull_request'
-          uses: marocchino/sticky-pull-request-comment@v2
-          with:
-            recreate: true
-            header: adversarial-badge
-            message: |
-              ### Adversarial Parity Status
-              ![adversarial](${{ steps.badgeurl.outputs.url }})
-              <sub>Badge updates each run. If it's broken on fork PRs, see the job artifacts for
-   `adversarial_badge.svg`.</sub>
+      - name: Create/Update sticky PR comment with badge
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          header: adversarial-badge
+          message: |
+            ### Adversarial Parity Status
+            ![adversarial](${{ steps.badgeurl.outputs.url }})
+            <sub>Badge updates each run. If it's broken on fork PRs, see the job artifacts for `adversarial_badge.svg`.</sub>
 
-        - name: Upload artifacts (JUnit + Badge)
-          uses: actions/upload-artifact@v4
-          with:
-            name: adversarial-junit-and-badge
-            path: |
-              junit/adversarial.xml
-              ${{ env.BADGE_PATH }}
+      - name: Upload artifacts (JUnit + Badge)
+        uses: actions/upload-artifact@v4
+        with:
+          name: adversarial-junit-and-badge
+          path: |
+            junit/adversarial.xml
+            ${{ env.BADGE_PATH }}
