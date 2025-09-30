@@ -275,7 +275,32 @@ function generateRelease() {
   };
 
   // Add optional fields
-  if (issueAreas) release["cpo:issueArea"] = issueAreas;
+  if (issueAreas) {
+    release["cpo:issueArea"] = issueAreas;
+
+    // Add structured issue positions with stances
+    const issuesList = issueAreas.split(',').map(i => i.trim());
+    if (issuesList.length > 0) {
+      const issueStances = window.detectedIssueStances || {};
+
+      release["about"] = issuesList.map(issue => ({
+        "@type": "Thing",
+        "name": issue.replace(/_/g, ' '),
+        "identifier": issue
+      }));
+
+      // Add policy positions
+      release["cpo:policyPositions"] = issuesList.map(issue => {
+        const stance = issueStances[issue] || 'support';
+        return {
+          "@type": "cpo:PolicyPosition",
+          "cpo:issue": issue.replace(/_/g, ' '),
+          "cpo:stance": stance,
+          "cpo:mentioned": true
+        };
+      });
+    }
+  }
   if (subtype) release["cpo:subtype"] = subtype;
 
   // Add claims
@@ -545,28 +570,115 @@ function parsePastedRelease() {
     }
   }
 
-  // Auto-detect issue areas
+  // Auto-detect issue areas with enhanced keyword matching
   const issueKeywords = {
-    healthcare: ['health', 'healthcare', 'medical', 'medicare', 'medicaid', 'affordable care'],
-    economy: ['economy', 'economic', 'jobs', 'employment', 'wages', 'income', 'tax'],
-    environment: ['environment', 'climate', 'clean energy', 'renewable', 'carbon', 'pollution', 'green'],
-    education: ['education', 'school', 'teacher', 'student', 'college', 'university'],
-    housing: ['housing', 'affordable housing', 'rent', 'homeowner', 'homeless'],
-    immigration: ['immigration', 'immigrant', 'border', 'refugee', 'citizenship'],
-    justice: ['justice', 'criminal justice', 'police', 'prison', 'sentencing'],
-    labor: ['labor', 'union', 'worker', 'workplace', 'organizing'],
-    infrastructure: ['infrastructure', 'road', 'bridge', 'transit', 'broadband'],
-    civil_rights: ['civil rights', 'voting rights', 'equality', 'discrimination'],
-    foreign_policy: ['foreign policy', 'international', 'military', 'defense', 'diplomacy']
+    healthcare: {
+      primary: ['healthcare', 'health care', 'medicare', 'medicaid', 'affordable care act', 'aca', 'obamacare'],
+      secondary: ['health', 'medical', 'hospital', 'doctor', 'insurance', 'prescription', 'drug costs', 'mental health']
+    },
+    economy: {
+      primary: ['economy', 'economic growth', 'jobs plan', 'employment', 'unemployment', 'wages', 'minimum wage'],
+      secondary: ['income', 'tax', 'inflation', 'small business', 'manufacturing', 'trade']
+    },
+    environment: {
+      primary: ['climate change', 'climate crisis', 'clean energy', 'renewable energy', 'carbon emissions', 'green new deal'],
+      secondary: ['environment', 'pollution', 'solar', 'wind power', 'sustainability', 'epa']
+    },
+    education: {
+      primary: ['education', 'public schools', 'teachers', 'student debt', 'college affordability', 'pell grant'],
+      secondary: ['school', 'student', 'classroom', 'university', 'community college', 'education funding']
+    },
+    housing: {
+      primary: ['affordable housing', 'housing crisis', 'homelessness', 'rent control', 'housing costs'],
+      secondary: ['housing', 'rent', 'homeowner', 'eviction', 'foreclosure', 'mortgage']
+    },
+    immigration: {
+      primary: ['immigration reform', 'border security', 'path to citizenship', 'daca', 'dreamers'],
+      secondary: ['immigration', 'immigrant', 'border', 'refugee', 'asylum', 'visa']
+    },
+    justice: {
+      primary: ['criminal justice reform', 'police reform', 'mass incarceration', 'sentencing reform', 'bail reform'],
+      secondary: ['justice', 'police', 'prison', 'incarceration', 'law enforcement', 'crime']
+    },
+    labor: {
+      primary: ['labor rights', 'union', 'collective bargaining', 'right to organize', 'pro act', 'workers rights'],
+      secondary: ['labor', 'worker', 'workplace', 'organizing', 'strike', 'wage theft']
+    },
+    infrastructure: {
+      primary: ['infrastructure', 'infrastructure plan', 'roads and bridges', 'public transit', 'broadband access'],
+      secondary: ['road', 'bridge', 'transit', 'transportation', 'internet access', 'water system']
+    },
+    civil_rights: {
+      primary: ['civil rights', 'voting rights', 'voter suppression', 'equality act', 'racial justice'],
+      secondary: ['equality', 'discrimination', 'lgbtq', 'reproductive rights', 'voter access']
+    },
+    foreign_policy: {
+      primary: ['foreign policy', 'national security', 'defense spending', 'military', 'diplomacy'],
+      secondary: ['international', 'overseas', 'nato', 'china', 'veterans']
+    }
   };
 
   const textLower = text.toLowerCase();
   const detectedIssues = [];
+  const issueScores = {};
+
   for (const [issue, keywords] of Object.entries(issueKeywords)) {
-    if (keywords.some(kw => textLower.includes(kw))) {
+    let score = 0;
+    // Primary keywords worth 3 points each
+    keywords.primary.forEach(kw => {
+      if (textLower.includes(kw)) score += 3;
+    });
+    // Secondary keywords worth 1 point each
+    keywords.secondary.forEach(kw => {
+      if (textLower.includes(kw)) score += 1;
+    });
+
+    // Include if score >= 2 (e.g., 1 primary or 2 secondary mentions)
+    if (score >= 2) {
       detectedIssues.push(issue);
+      issueScores[issue] = score;
     }
   }
+
+  // Detect stance/position on issues (support vs oppose)
+  const stancePatterns = {
+    support: ['support', 'fight for', 'champion', 'advocate', 'back', 'stand with', 'commit to', 'will protect', 'expand', 'strengthen'],
+    oppose: ['oppose', 'fight against', 'reject', 'stand against', 'vote against', 'block', 'prevent', 'stop']
+  };
+
+  const issueStances = {};
+  detectedIssues.forEach(issue => {
+    const issueTerms = [...issueKeywords[issue].primary, ...issueKeywords[issue].secondary];
+
+    // Look for stance indicators near issue terms
+    for (const term of issueTerms) {
+      if (textLower.includes(term)) {
+        const termIndex = textLower.indexOf(term);
+        const contextStart = Math.max(0, termIndex - 100);
+        const contextEnd = Math.min(text.length, termIndex + 100);
+        const context = textLower.substring(contextStart, contextEnd);
+
+        // Check for support indicators
+        if (stancePatterns.support.some(s => context.includes(s))) {
+          issueStances[issue] = 'support';
+          break;
+        }
+        // Check for oppose indicators
+        if (stancePatterns.oppose.some(s => context.includes(s))) {
+          issueStances[issue] = 'oppose';
+          break;
+        }
+      }
+    }
+
+    // Default to support if no clear stance found (most releases are positive)
+    if (!issueStances[issue]) {
+      issueStances[issue] = 'support';
+    }
+  });
+
+  // Store stances for use in JSON-LD generation
+  window.detectedIssueStances = issueStances;
 
   // Check the checkboxes for detected issues
   document.querySelectorAll('#issueCheckboxes input[type="checkbox"]').forEach(cb => {
