@@ -33,9 +33,20 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
 
   <div class="config">
     <label class="small"><strong>GitHub Configuration</strong></label>
-    <input id="token" type="password" placeholder="GitHub Personal Access Token (stored in browser only)" />
+    <input id="token" type="password" placeholder="Fine-grained GitHub token (stored in browser session only)" />
     <div class="small" style="margin-top:8px">
-      Token needs <code>repo</code> scope. <a href="https://github.com/settings/tokens" target="_blank" style="color:#7dd3fc">Create token</a>
+      <strong>Create a fine-grained token:</strong>
+      <ol style="margin:8px 0;padding-left:20px">
+        <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" style="color:#7dd3fc">Go to token settings</a></li>
+        <li>Token name: <code>CPO Allowlist Editor</code></li>
+        <li>Repository access: <strong>Only select repositories</strong> → <code>edforman-75/campaign-ai-editor</code></li>
+        <li>Permissions → Repository permissions → <strong>Contents</strong>: <code>Read and write</code></li>
+        <li>Click "Generate token" and copy it here</li>
+      </ol>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <input type="checkbox" id="rememberToken" />
+        <span>Remember token (stored in browser localStorage - less secure but convenient)</span>
+      </label>
     </div>
   </div>
 
@@ -86,15 +97,24 @@ let model = { version: 1, updated: new Date().toISOString(), notes: "", allowed_
 let fileSha = null; // GitHub file SHA for updates
 const domainRe = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
 
-// Load token from localStorage
+// Load token from localStorage only if "remember" was checked
+const rememberCheckbox = document.getElementById('rememberToken');
 if(localStorage.getItem('gh_token')) {
   tokenInput.value = localStorage.getItem('gh_token');
+  rememberCheckbox.checked = true;
 }
 
 function getToken(){
   const token = tokenInput.value.trim();
   if(!token){ status('Enter GitHub token', 'bad'); return null; }
-  localStorage.setItem('gh_token', token);
+
+  // Only store if remember checkbox is checked
+  if(rememberCheckbox.checked) {
+    localStorage.setItem('gh_token', token);
+  } else {
+    localStorage.removeItem('gh_token');
+  }
+
   return token;
 }
 
