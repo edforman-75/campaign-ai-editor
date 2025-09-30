@@ -83,13 +83,48 @@ h2{margin:0 0 16px 0;font-size:18px}
       </div>
 
       <div class="form-group">
-        <label>Issue Area (optional)</label>
-        <input type="text" id="issueArea" placeholder="environment, healthcare, economy..." />
+        <label>Issue Areas (optional) - Select all that apply</label>
+        <div id="issueCheckboxes" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="healthcare"> Healthcare</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="economy"> Economy</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="environment"> Environment</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="education"> Education</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="housing"> Housing</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="immigration"> Immigration</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="justice"> Justice</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="labor"> Labor</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="infrastructure"> Infrastructure</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="civil_rights"> Civil Rights</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="foreign_policy"> Foreign Policy</label>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" value="other"> Other</label>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Subtype Code (optional)</label>
-        <input type="text" id="subtype" placeholder="POL.ROL.CE" />
+        <label>Subtype (optional)</label>
+        <select id="subtype">
+          <option value="">-- Select subtype --</option>
+          <option value="ANN.EVT.RALLY">Announcement - Event - Rally</option>
+          <option value="ANN.EVT.TOWN">Announcement - Event - Town Hall</option>
+          <option value="ANN.CMP.LAUNCH">Announcement - Campaign Launch</option>
+          <option value="POL.ROL.CE">Policy Rollout - Clean Energy</option>
+          <option value="POL.ROL.HC">Policy Rollout - Healthcare</option>
+          <option value="POL.ROL.ED">Policy Rollout - Education</option>
+          <option value="POL.ROL.EC">Policy Rollout - Economy</option>
+          <option value="END.ORG">Endorsement - Organization</option>
+          <option value="END.IND">Endorsement - Individual</option>
+          <option value="END.ELECT">Endorsement - Elected Official</option>
+          <option value="ATT.OPP.CHAR">Attack - Opponent - Character</option>
+          <option value="ATT.OPP.REC">Attack - Opponent - Record</option>
+          <option value="FUN.HAUL">Fundraising - Haul Announcement</option>
+          <option value="FUN.GOAL">Fundraising - Goal/Deadline</option>
+          <option value="CRI.CLAR">Crisis - Clarification</option>
+          <option value="CRI.RESP">Crisis - Response</option>
+          <option value="MOB.VOL">Mobilization - Volunteer</option>
+          <option value="MOB.VOTE">Mobilization - Vote</option>
+          <option value="OPS.STAFF">Operations - Staff Hire</option>
+          <option value="OPS.OFFICE">Operations - Office Opening</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -129,7 +164,7 @@ h2{margin:0 0 16px 0;font-size:18px}
   </div>
 
   <div style="text-align:center;margin-top:24px">
-    <a href="./index.html" style="color:#7dfca5">← Back to Portal Home</a>
+    <a href="index.html" style="color:#7dfca5">← Back to Portal Home</a>
   </div>
 </div>
 
@@ -169,7 +204,11 @@ function generateRelease() {
   const campaignUrl = document.getElementById('campaignUrl').value.trim();
   const pressEmail = document.getElementById('pressEmail').value.trim();
   const articleBody = document.getElementById('articleBody').value.trim();
-  const issueArea = document.getElementById('issueArea').value.trim();
+
+  // Collect checked issue areas
+  const issueCheckboxes = document.querySelectorAll('#issueCheckboxes input[type="checkbox"]:checked');
+  const issueAreas = Array.from(issueCheckboxes).map(cb => cb.value).join(', ');
+
   const subtype = document.getElementById('subtype').value.trim();
   const ctaUrl = document.getElementById('ctaUrl').value.trim();
 
@@ -204,7 +243,7 @@ function generateRelease() {
   };
 
   // Add optional fields
-  if (issueArea) release["cpo:issueArea"] = issueArea;
+  if (issueAreas) release["cpo:issueArea"] = issueAreas;
   if (subtype) release["cpo:subtype"] = subtype;
 
   // Add claims
@@ -309,7 +348,7 @@ function clearForm() {
   document.getElementById('campaignName').value = '';
   document.getElementById('campaignUrl').value = '';
   document.getElementById('pressEmail').value = '';
-  document.getElementById('issueArea').value = '';
+  document.querySelectorAll('#issueCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
   document.getElementById('subtype').value = '';
   document.getElementById('ctaUrl').value = '';
   document.getElementById('claimsContainer').innerHTML = '';
@@ -370,13 +409,19 @@ function parsePastedRelease() {
 
   for (const line of lines) {
     // Look for "Contact:" or email patterns
-    if (line.toLowerCase().includes('contact:')) {
+    if (line.toLowerCase().includes('contact')) {
       const emailMatch = line.match(/[\w.-]+@[\w.-]+\.\w+/);
       if (emailMatch) pressEmail = emailMatch[0];
 
       // Try to extract name before contact
-      const nameMatch = line.match(/^(.+?)\s*[-—]\s*Contact:/i);
+      const nameMatch = line.match(/^(.+?)\s*[-—:]\s*Contact/i);
       if (nameMatch) campaignName = nameMatch[1].trim();
+    }
+
+    // Look for "Press:" or "Media:" patterns
+    if ((line.toLowerCase().includes('press:') || line.toLowerCase().includes('media:')) && !pressEmail) {
+      const emailMatch = line.match(/[\w.-]+@[\w.-]+\.\w+/);
+      if (emailMatch) pressEmail = emailMatch[0];
     }
 
     // Look for URLs
@@ -386,11 +431,39 @@ function parsePastedRelease() {
     }
 
     // Look for "for Congress", "for Senate", etc.
-    const forMatch = line.match(/(.+?)\s+for\s+(Congress|Senate|Governor|Mayor)/i);
+    const forMatch = line.match(/(.+?)\s+for\s+(Congress|Senate|Governor|Mayor|Assembly|City Council)/i);
     if (forMatch && !campaignName) {
       campaignName = forMatch[0].trim();
     }
   }
+
+  // Auto-detect issue areas
+  const issueKeywords = {
+    healthcare: ['health', 'healthcare', 'medical', 'medicare', 'medicaid', 'affordable care'],
+    economy: ['economy', 'economic', 'jobs', 'employment', 'wages', 'income', 'tax'],
+    environment: ['environment', 'climate', 'clean energy', 'renewable', 'carbon', 'pollution', 'green'],
+    education: ['education', 'school', 'teacher', 'student', 'college', 'university'],
+    housing: ['housing', 'affordable housing', 'rent', 'homeowner', 'homeless'],
+    immigration: ['immigration', 'immigrant', 'border', 'refugee', 'citizenship'],
+    justice: ['justice', 'criminal justice', 'police', 'prison', 'sentencing'],
+    labor: ['labor', 'union', 'worker', 'workplace', 'organizing'],
+    infrastructure: ['infrastructure', 'road', 'bridge', 'transit', 'broadband'],
+    civil_rights: ['civil rights', 'voting rights', 'equality', 'discrimination'],
+    foreign_policy: ['foreign policy', 'international', 'military', 'defense', 'diplomacy']
+  };
+
+  const textLower = text.toLowerCase();
+  const detectedIssues = [];
+  for (const [issue, keywords] of Object.entries(issueKeywords)) {
+    if (keywords.some(kw => textLower.includes(kw))) {
+      detectedIssues.push(issue);
+    }
+  }
+
+  // Check the checkboxes for detected issues
+  document.querySelectorAll('#issueCheckboxes input[type="checkbox"]').forEach(cb => {
+    cb.checked = detectedIssues.includes(cb.value);
+  });
 
   // Article body is everything after the first few header lines
   let bodyStartIdx = 1;
@@ -409,6 +482,9 @@ function parsePastedRelease() {
 
   // Clear paste area
   document.getElementById('pasteArea').value = '';
+
+  // Scroll to top of form
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   showValidation('Parsed! Review and adjust fields as needed, then click Generate JSON-LD', 'success');
 }
