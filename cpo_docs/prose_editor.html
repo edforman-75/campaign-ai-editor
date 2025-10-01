@@ -14,11 +14,7 @@ textarea{width:100%;min-height:200px;padding:10px;border-radius:10px;border:1px 
 select,input[type=checkbox]{padding:8px;border-radius:8px;background:var(--bg);border:1px solid #1f4366;color:var(--text)}
 button{padding:8px 12px;border-radius:8px;background:#0e2a42;border:1px solid #1f4366;color:var(--text);cursor:pointer}
 button.secondary{background:#0a1220}
-.suggestion{border:1px dashed #2b3a55;border-radius:10px;padding:10px;margin:10px 0}
-.suggestion h4{margin:0 0 6px 0}
-.suggestion textarea{min-height:80px}
 .small{color:var(--muted)}
-/* coverage meter */
 .meter{height:10px;border-radius:999px;background:#0f1a2c;border:1px solid #1b3154;overflow:hidden}
 .meter>span{display:block;height:100%;width:0%;transition:width .3s}
 .meter.red>span{background:#b74a4a}
@@ -26,12 +22,16 @@ button.secondary{background:#0a1220}
 .meter.green>span{background:#3aa76d}
 .badge{border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:12px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{border:1px solid #1f4366;padding:6px 8px;font-size:14px}
+.table th{background:#0f1a2c;text-align:left}
+.ok{color:#3aa76d}.miss{color:#b74a4a}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Prose Suggestion Editor</h1>
-  <p class="small">Strengthen prose to match JSON-LD. Choose a tone and generate candidate sentences to insert into the draft.</p>
+  <p class="small">Strengthen prose to match JSON-LD. Weighted coverage + checklist shows where to add lines.</p>
 
   <div class="card">
     <div class="grid2">
@@ -51,7 +51,7 @@ button.secondary{background:#0a1220}
       <div>
         <div class="small">Markup–Prose Parity</div>
         <div class="meter" id="meter"><span></span></div>
-        <div class="small"><span class="badge" id="parityLabel">Score: —</span></div>
+        <div class="small"><span class="badge" id="parityLabel">Score: —</span> <span class="badge" id="familyLabel">Family: —</span></div>
       </div>
     </div>
     <div class="controls">
@@ -80,6 +80,14 @@ button.secondary{background:#0a1220}
     </div>
   </div>
 
+  <div class="card" id="checklistCard">
+    <h3>Parity Checklist</h3>
+    <table class="table" id="checklist">
+      <thead><tr><th>Field</th><th>Status</th><th>Weight</th><th>Contribution</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <div id="suggestions" class="card"></div>
 
   <div class="card">
@@ -97,8 +105,10 @@ const out = $("#suggestions");
 const meter = $("#meter");
 const meterFill = meter.querySelector("span");
 const parityLabel = $("#parityLabel");
+const familyLabel = $("#familyLabel");
 const styleSel = $("#style");
 const autoTone = $("#autoTone");
+let weightsMap = null;
 
 function setMeter(score){
   meter.classList.remove("red","amber","green");
@@ -110,35 +120,38 @@ function setMeter(score){
   parityLabel.textContent = "Score: " + score + "/100";
 }
 
+function renderChecklist(report, totalWeight){
+  const tbody = document.querySelector("#checklist tbody");
+  tbody.innerHTML = "";
+  report.forEach(r=>{
+    const tr = document.createElement("tr");
+    const contribution = (r.covered ? (r.weight/totalWeight*100) : 0);
+    tr.innerHTML = `
+      <td>${r.key}</td>
+      <td class="${r.covered?'ok':'miss'}">${r.covered ? 'covered' : 'missing'}</td>
+      <td>${r.weight.toFixed(2)}</td>
+      <td>${contribution.toFixed(1)}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 function insertAtPosition(text, where){
   const area = $("#prose");
   let val = area.value;
-  const p = val.split(/\n\n/); // paragraphs
+  const p = val.split(/\n\n/);
   const line = text.trim();
 
   if (where === "headline"){
-    // simplest: insert at very top as a new line if not present
     val = line + "\n\n" + val;
   } else if (where === "lede"){
-    // after first paragraph
-    if (p.length > 0){
-      p.splice(1, 0, line);
-      val = p.join("\n\n");
-    } else {
-      val = line + "\n\n" + val;
-    }
+    if (p.length > 0){ p.splice(1, 0, line); val = p.join("\n\n"); }
+    else { val = line + "\n\n" + val; }
   } else if (where === "close"){
-    // add as final paragraph
-    if (val.endsWith("\n\n")) val += line;
-    else val = val + "\n\n" + line;
+    if (val.endsWith("\n\n")) val += line; else val = val + "\n\n" + line;
   } else {
-    // body (default): insert after second paragraph if exists
-    if (p.length > 1){
-      p.splice(2, 0, line);
-      val = p.join("\n\n");
-    } else {
-      val = val + "\n\n" + line;
-    }
+    if (p.length > 1){ p.splice(2, 0, line); val = p.join("\n\n"); }
+    else { val = val + "\n\n" + line; }
   }
   area.value = val;
 }
@@ -156,7 +169,7 @@ function renderSuggestions(items){
       <div style="margin:6px 0">
         <textarea id="sugg_${idx}_${i}">${s}</textarea>
         <div class="controls">
-          <span class="small">Placement hint: <strong>${r.placement || "body"}</strong></span>
+          <span class="small">Placement: <strong>${r.placement || "body"}</strong></span>
           <button data-insert="${idx}_${i}" data-where="${r.placement||'body'}">Insert at ${r.placement||'body'}</button>
           <button class="secondary" data-insert="${idx}_${i}" data-where="lede">Insert at lede</button>
           <button class="secondary" data-insert="${idx}_${i}" data-where="body">Insert at body</button>
@@ -210,24 +223,22 @@ async function suggest(){
     const prose = $("#prose").value;
     const json = JSON.parse($("#jsonld").value);
     const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
-
-    // Load weights for family-specific scoring
-    let weights = null;
-    try {
-      weights = await (await fetch("../cpo_tools/lint/weights.json")).json();
-    } catch (e) {
-      console.warn("Weights not loaded, using fallback scoring:", e.message);
+    if (!weightsMap){
+      try { weightsMap = await (await fetch("../cpo_tools/lint/weights.json")).json(); }
+      catch(e){ console.warn("weights.json not found; using engine defaults"); }
     }
 
-    // coverage heatmap with weighted scoring
-    const coverage = scoreCoverage({ proseText: prose, jsonld: json, weightsMap: weights });
-    setMeter(coverage.score);
+    // coverage: weighted
+    const cov = scoreCoverage({ proseText: prose, jsonld: json, weightsMap });
+    setMeter(cov.score);
+    familyLabel.textContent = "Family: " + (cov.family || "default");
+    renderChecklist(cov.report, cov.totalWeight);
 
     // auto tone
     const st = Array.isArray(json["cpo:subtype"])? json["cpo:subtype"] : (json["cpo:subtype"]?[json["cpo:subtype"]]:[]);
     if (autoTone && autoTone.checked){
       const auto = pickAutoTone(st, prompts.defaultToneBySubtypeFamily || {});
-      if (auto) styleSel.value = auto;
+      if (auto) document.getElementById("style").value = auto;
     }
 
     const results = await generateSuggestions({
@@ -235,7 +246,7 @@ async function suggest(){
       jsonld: json,
       prompts,
       llmFn,
-      style: styleSel.value
+      style: document.getElementById("style").value
     });
     renderSuggestions(results);
     status.textContent = "Suggestions ready.";
