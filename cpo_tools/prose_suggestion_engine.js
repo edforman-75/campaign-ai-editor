@@ -1,4 +1,4 @@
-/* Prose Suggestion Engine (multi-subtype, tone-aware, coverage scoring, placement) */
+/* Prose Suggestion Engine (multi-subtype, tone-aware, weighted scoring, placement) */
 export const defaultHeuristics = {
   headline: { required: true, cues: ["headline","announces","statement"] },
   datePublished: { required: true, cues: ["today","on ","dated"] },
@@ -11,7 +11,6 @@ export const defaultHeuristics = {
 
 export const safeArray = (x)=>Array.isArray(x)?x:(x==null?[]:[x]);
 
-/* map subtype code -> high-level family */
 export function subtypeFamily(code=""){
   const c = String(code||"");
   if (c.startsWith("ANN.")) return "ANN";
@@ -52,58 +51,57 @@ export function proseCovers(text, fieldKey, entityValue, heuristics = defaultHeu
   return cuesFound || literalFound;
 }
 
-/* coverage score and per-field report */
-export function scoreCoverage({ proseText, jsonld, heuristics = defaultHeuristics }){
-  const ents = extractEntities(jsonld);
-  const reqFields = [
-    ["headline", ents.headline],
-    ["datePublished", ents.datePublished],
-    ["cpo:subtype", ents.subtypes.join(",")]
-  ];
-  const optFields = [
-    ["endorser", ents.endorser],
-    ["location", ents.location],
-    ["cpo:claims", ents.claims && ents.claims.length ? "[claims]" : null],
-    ["cpo:cta", ents.cta && ents.cta.url ? ents.cta.url : null]
-  ];
-  const report = [];
-  let requiredTotal = 0, requiredCovered = 0, optionalTotal = 0, optionalCovered = 0;
-
-  for (const [k,v] of reqFields){
-    requiredTotal++;
-    const covered = proseCovers(proseText, k, v, heuristics);
-    if (covered) requiredCovered++;
-    report.push({ key:k, required:true, covered, value:v });
-  }
-  for (const [k,v] of optFields){
-    if (!v) continue;
-    optionalTotal++;
-    const covered = proseCovers(proseText, k, v, heuristics);
-    if (covered) optionalCovered++;
-    report.push({ key:k, required:false, covered, value:v });
-  }
-
-  const reqWeight = 0.7; // 70% of score from required, 30% from optional
-  const optWeight = 0.3;
-  const reqScore = requiredTotal ? (requiredCovered/requiredTotal) : 1;
-  const optScore = optionalTotal ? (optionalCovered/optionalTotal) : 1;
-  const score = Math.round(100*(reqWeight*reqScore + optWeight*optScore));
-
-  return { score, report, entities: ents };
-}
-
-/* placement recommender */
 export function suggestPlacement(fieldKey, primaryFamily){
-  // Defaults matter more than family in many cases
   if (fieldKey === "headline") return "headline";
   if (fieldKey === "datePublished") return "lede";
   if (fieldKey === "endorser") return primaryFamily === "ENDORSEMENT" ? "lede" : "body";
   if (fieldKey === "location") return "lede";
-  if (fieldKey === "cpo:claims") return primaryFamily === "POLICY" || primaryFamily === "CRISIS" ? "body" : "body";
+  if (fieldKey === "cpo:claims") return (primaryFamily === "POLICY" || primaryFamily === "CRISIS") ? "body" : "body";
   if (fieldKey === "cpo:cta") return "close";
-  if (fieldKey === "Event") return primaryFamily === "ANN" || primaryFamily === "MOBILIZATION" ? "lede" : "body";
+  if (fieldKey === "Event") return (primaryFamily === "ANN" || primaryFamily === "MOBILIZATION") ? "lede" : "body";
   if (fieldKey === "cpo:subtype") return "lede";
   return "body";
+}
+
+/* Weighted coverage score.
+   weightsMap: { families: { FAMILY: { field: weight, ... }, default: {...} } }
+*/
+export function scoreCoverage({ proseText, jsonld, heuristics = defaultHeuristics, weightsMap = null }){
+  const ents = extractEntities(jsonld);
+  const fam = subtypeFamily(ents.primarySubtype);
+  const famWeights = (weightsMap && weightsMap.families && (weightsMap.families[fam] || weightsMap.families.default)) || null;
+
+  // Compose candidate fields (include Event only if jsonld has an Event)
+  const hasEvent = !!(ents.events && ents.events.length);
+  const fields = [
+    { key: "headline", val: ents.headline, required: true },
+    { key: "datePublished", val: ents.datePublished, required: true },
+    { key: "cpo:subtype", val: ents.subtypes.join(","), required: true },
+    { key: "endorser", val: ents.endorser, required: false },
+    { key: "location", val: ents.location, required: false },
+    { key: "cpo:claims", val: ents.claims && ents.claims.length ? "[claims]" : null, required: false },
+    { key: "cpo:cta", val: ents.cta && ents.cta.url ? ents.cta.url : null, required: false },
+    { key: "Event", val: hasEvent ? (ents.events[0]?.name || "[event]") : null, required: false }
+  ];
+
+  // Determine weights per field
+  const items = [];
+  let totalWeight = 0;
+  fields.forEach(f => {
+    if (f.val == null || f.val === "") return; // only score fields present in markup
+    const w = famWeights && typeof famWeights[f.key] === "number"
+      ? famWeights[f.key]
+      : (f.required ? 0.2 : 0.1); // fallback default if no weightsMap
+    const covered = proseCovers(proseText, f.key, f.val, heuristics);
+    items.push({ key: f.key, required: !!f.required, covered, value: f.val, weight: w });
+    totalWeight += w;
+  });
+
+  // Normalize to 100
+  const denom = totalWeight > 0 ? totalWeight : 1;
+  const score = Math.round(100 * (items.reduce((acc, it) => acc + (it.covered ? it.weight : 0), 0) / denom));
+
+  return { score, report: items, entities: ents, family: fam, totalWeight: +denom.toFixed(3) };
 }
 
 export function analyzeCoherence({ proseText, jsonld, heuristics = defaultHeuristics }){
@@ -120,21 +118,20 @@ export function analyzeCoherence({ proseText, jsonld, heuristics = defaultHeuris
     { key: "cpo:claims", val: ents.claims && ents.claims.length ? "[claims]" : null },
     { key: "cpo:cta", val: ents.cta && ents.cta.url ? ents.cta.url : null }
   ];
-
   for (const r of reqs){
     const covered = proseCovers(proseText, r.key, r.val, heuristics);
     if(!covered) gaps.push({ key:r.key, value:r.val, required:true });
-  }
-  for (const o of opts){
-    if(!o.val) continue;
-    const covered = proseCovers(proseText, o.key, o.val, heuristics);
-    if(!covered) gaps.push({ key:o.key, value:o.val, required:false });
   }
   if (ents.events.length){
     const names = ents.events.map(e => e.name).filter(Boolean);
     if (names.length && !names.some(n => proseText.toLowerCase().includes(String(n).toLowerCase()))){
       gaps.push({ key:"Event", value:names[0], required:false });
     }
+  }
+  for (const o of opts){
+    if(!o.val) continue;
+    const covered = proseCovers(proseText, o.key, o.val, heuristics);
+    if(!covered) gaps.push({ key:o.key, value:o.val, required:false });
   }
   return { entities: ents, gaps };
 }

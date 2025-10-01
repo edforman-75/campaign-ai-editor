@@ -211,8 +211,16 @@ async function suggest(){
     const json = JSON.parse($("#jsonld").value);
     const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
 
-    // coverage heatmap
-    const coverage = scoreCoverage({ proseText: prose, jsonld: json });
+    // Load weights for family-specific scoring
+    let weights = null;
+    try {
+      weights = await (await fetch("../cpo_tools/lint/weights.json")).json();
+    } catch (e) {
+      console.warn("Weights not loaded, using fallback scoring:", e.message);
+    }
+
+    // coverage heatmap with weighted scoring
+    const coverage = scoreCoverage({ proseText: prose, jsonld: json, weightsMap: weights });
     setMeter(coverage.score);
 
     // auto tone
