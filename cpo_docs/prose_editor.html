@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prose Suggestion Editor — CPO</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.flex{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#111a2e;border:1px solid #182544;border-radius:14px;padding:14px}
+textarea{width:100%;min-height:200px;padding:10px;border-radius:10px;border:1px solid #1f4366;background:#0a1220;color:#e6edf3}
+.controls{display:flex;gap:10px;align-items:center;margin:10px 0}
+button{padding:10px 14px;border-radius:10px;background:#0e2a42;border:1px solid #1f4366;color:#e6edf3;cursor:pointer}
+.suggestion{border:1px dashed #2b3a55;border-radius:10px;padding:10px;margin:10px 0}
+.suggestion h4{margin:0 0 6px 0}
+.suggestion textarea{min-height:80px}
+.small{color:#9fb3c8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Prose Suggestion Editor</h1>
+  <p class="small">Strengthen prose to match JSON-LD. Generate candidate sentences, then insert into the draft.</p>
+  <div class="flex">
+    <div class="card">
+      <h3>Prose Draft</h3>
+      <textarea id="prose">CLEVELAND — Jane Smith announced a weekend of action to mobilize volunteers across the district.</textarea>
+    </div>
+    <div class="card">
+      <h3>JSON-LD</h3>
+      <textarea id="jsonld">{
+  "@context": ["https://schema.org", "https://campaign-press-ontology.org/ns/v1#"],
+  "@type": ["PressRelease"],
+  "headline": "Weekend of Action: Canvass Launch 10 AM Saturday",
+  "datePublished": "2025-09-30",
+  "cpo:subtype": "GRA.VOL.CANV",
+  "author": {"@type":"Organization","name":"Jane Smith for Congress"},
+  "cpo:cta": {"@type":"cpo:CTA","url":"https://janesmithforcongress.org/volunteer/canvass"},
+  "subjectOf": [{"@type":"Event","name":"Canvass Launch","startDate":"2025-10-04T10:00:00-04:00"}]
+}</textarea>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btnSuggest">Suggest Prose</button>
+    <span id="status" class="small"></span>
+  </div>
+
+  <div id="suggestions"></div>
+
+  <div class="card">
+    <a href="./index.html">← Back to Portal Home</a>
+  </div>
+</div>
+
+<script type="module">
+import { generateSuggestions } from "../cpo_tools/prose_suggestion_engine.js";
+const $ = (s)=>document.querySelector(s);
+const status = $("#status");
+const out = $("#suggestions");
+
+function insertAtCursor(textarea, text) {
+  const start = textarea.selectionStart ?? textarea.value.length;
+  const end = textarea.selectionEnd ?? textarea.value.length;
+  const before = textarea.value.substring(0, start);
+  const after = textarea.value.substring(end);
+  textarea.value = before + (before && !before.endsWith("\n") ? "\n" : "") + text + "\n" + after;
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = (before + text + "\n").length;
+}
+
+function renderSuggestions(items) {
+  out.innerHTML = "";
+  if (!items.length) {
+    out.innerHTML = "<p class='small'>No gaps detected or all covered in prose.</p>";
+    return;
+  }
+  const proseEl = $("#prose");
+  items.forEach((r, idx) => {
+    const div = document.createElement("div");
+    div.className = "suggestion";
+    const list = (r.suggestions || []).map((s, i) => `
+      <div style="margin:6px 0">
+        <textarea id="sugg_${idx}_${i}">${s}</textarea>
+        <div class="controls">
+          <button data-insert="${idx}_${i}">Insert</button>
+          <button data-copy="${idx}_${i}">Copy</button>
+        </div>
+      </div>`).join("");
+    div.innerHTML = `<h4>${r.missing_field} ${r.required ? "(required)" : ""}</h4>${list}`;
+    out.appendChild(div);
+  });
+
+  out.addEventListener("click", (ev)=>{
+    const t = ev.target;
+    if (t.matches("[data-insert]")) {
+      const key = t.getAttribute("data-insert");
+      const ta = document.getElementById("sugg_" + key);
+      if (ta && ta.value.trim()) {
+        insertAtCursor(proseEl, ta.value.trim());
+        status.textContent = "Inserted suggestion into prose.";
+      }
+    } else if (t.matches("[data-copy]")) {
+      const key = t.getAttribute("data-copy");
+      const ta = document.getElementById("sugg_" + key);
+      if (ta) {
+        navigator.clipboard.writeText(ta.value).then(()=>{
+          status.textContent = "Copied suggestion to clipboard.";
+        });
+      }
+    }
+  }, { once: true });
+}
+
+async function suggest() {
+  status.textContent = "Analyzing…";
+  try {
+    const prose = $("#prose").value;
+    const jsonld = JSON.parse($("#jsonld").value);
+    const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
+    const results = await generateSuggestions({ proseText: prose, jsonld, prompts, llmFn: null });
+    renderSuggestions(results);
+    status.textContent = "Suggestions ready.";
+  } catch (e) {
+    status.textContent = "Error: " + e.message;
+  }
+}
+$("#btnSuggest").addEventListener("click", suggest);
+</script>
+</body></html>

@@ -7,38 +7,26 @@
     "endorser": {
       "neutral": [
         "Today, {{value}} announced its endorsement of Jane Smith, recognizing her record of service."
-      ],
-      "campaign": [
-        "Today, {{value}} endorsed Jane Smith\u2014another sign that working families trust her leadership."
-      ]
-    },
-    "cpo:cta": {
-      "neutral": [
-        "Learn more and take action at the campaign website."
-      ],
-      "campaign": [
-        "Join our movement\u2014visit the campaign site to {{value}}."
       ]
     },
     "Event": {
       "neutral": [
         "Jane Smith will speak at the upcoming event, {{value}}, with details available on the campaign site."
-      ],
-      "campaign": [
-        "Don\u2019t miss Jane Smith at {{value}}\u2014RSVP now on the campaign site."
-      ]
-    },
-    "location": {
-      "neutral": [
-        "Speaking in Cleveland, Jane Smith emphasized her commitment to the community."
       ]
     },
     "cpo:claims": {
       "neutral": [
         "According to cited sources, the campaign\u2019s plan is supported by current research."
-      ],
-      "campaign": [
-        "Backed by credible sources, Jane Smith\u2019s plan delivers real results for families."
+      ]
+    },
+    "cpo:cta": {
+      "neutral": [
+        "Learn more and take action at the campaign website."
+      ]
+    },
+    "location": {
+      "neutral": [
+        "Speaking in Cleveland, Jane Smith emphasized her commitment to the community."
       ]
     }
   }

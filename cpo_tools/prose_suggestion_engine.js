@@ -1,11 +1,11 @@
 export const defaultHeuristics = {
-  headline: { required: true, cues: ["headline", "announces", "statement"] },
-  datePublished: { required: true, cues: ["today", "on ", "dated"] },
-  "cpo:subtype": { required: true, cues: ["announcement", "policy", "endorsement", "fundraising", "crisis", "mobilization", "operations"] },
-  endorser: { required: false, cues: ["endorses", "endorsement", "backed by"] },
-  location: { required: false, cues: ["in ", "at "] },
-  "cpo:claims": { required: false, cues: ["according to", "cites", "research", "study", "estimate"] },
-  "cpo:cta": { required: false, cues: ["RSVP", "donate", "volunteer", "learn more", "sign up"] }
+  headline: { required: true, cues: ["headline","announces","statement"] },
+  datePublished: { required: true, cues: ["today","on ","dated"] },
+  "cpo:subtype": { required: true, cues: ["announcement","policy","endorsement","fundraising","crisis","mobilization","operations"] },
+  endorser: { required: false, cues: ["endorses","endorsement","backed by"] },
+  location: { required: false, cues: ["in ","at "] },
+  "cpo:claims": { required: false, cues: ["according to","cites","research","study","estimate"] },
+  "cpo:cta": { required: false, cues: ["RSVP","donate","volunteer","learn more","sign up"] }
 };
 export const safeArray = (x)=>Array.isArray(x)?x:(x==null?[]:[x]);
 export function extractEntities(jsonld){
@@ -15,12 +15,10 @@ export function extractEntities(jsonld){
   const events = subjectOf.filter(x => { const t = safeArray(x && x["@type"]); return t.includes("Event"); });
   const author = jsonld.author || {};
   const cta = jsonld["cpo:cta"] || {};
-  return {
-    types, claims, events, author, cta,
+  return { types, claims, events, author, cta,
     headline: jsonld.headline || "", datePublished: jsonld.datePublished || "",
     subtype: jsonld["cpo:subtype"] || "", endorser: jsonld.endorser || jsonld["cpo:endorser"] || null,
-    location: jsonld.location || null
-  };
+    location: jsonld.location || null };
 }
 export function proseCovers(text, fieldKey, entityValue, heuristics = defaultHeuristics){
   const t = (text || "").toLowerCase(); if(!t) return false;
