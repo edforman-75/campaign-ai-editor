@@ -118,30 +118,30 @@ h2{margin:0 0 16px 0;font-size:18px}
       </div>
 
       <div class="form-group">
-        <label>Subtype (optional)</label>
-        <select id="subtype">
-          <option value="">-- Select subtype --</option>
-          <option value="ANN.EVT.RALLY">Announcement - Event - Rally</option>
-          <option value="ANN.EVT.TOWN">Announcement - Event - Town Hall</option>
-          <option value="ANN.CMP.LAUNCH">Announcement - Campaign Launch</option>
-          <option value="POL.ROL.CE">Policy Rollout - Clean Energy</option>
-          <option value="POL.ROL.HC">Policy Rollout - Healthcare</option>
-          <option value="POL.ROL.ED">Policy Rollout - Education</option>
-          <option value="POL.ROL.EC">Policy Rollout - Economy</option>
-          <option value="END.ORG">Endorsement - Organization</option>
-          <option value="END.IND">Endorsement - Individual</option>
-          <option value="END.ELECT">Endorsement - Elected Official</option>
-          <option value="ATT.OPP.CHAR">Attack - Opponent - Character</option>
-          <option value="ATT.OPP.REC">Attack - Opponent - Record</option>
-          <option value="FUN.HAUL">Fundraising - Haul Announcement</option>
-          <option value="FUN.GOAL">Fundraising - Goal/Deadline</option>
-          <option value="CRI.CLAR">Crisis - Clarification</option>
-          <option value="CRI.RESP">Crisis - Response</option>
-          <option value="MOB.VOL">Mobilization - Volunteer</option>
-          <option value="MOB.VOTE">Mobilization - Vote</option>
-          <option value="OPS.STAFF">Operations - Staff Hire</option>
-          <option value="OPS.OFFICE">Operations - Office Opening</option>
-        </select>
+        <label>Subtype (optional) - Select all that apply (primary first)</label>
+        <div id="subtypeCheckboxes" style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px;max-height:300px;overflow-y:auto;padding:8px;background:#0a1220;border-radius:8px;border:1px solid #1f4366">
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="ANN.EVT.RALLY"> <span style="font-size:13px">ANN.EVT.RALLY - Announcement - Event - Rally</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="ANN.EVT.TOWN"> <span style="font-size:13px">ANN.EVT.TOWN - Announcement - Event - Town Hall</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="ANN.CMP.LAUNCH"> <span style="font-size:13px">ANN.CMP.LAUNCH - Announcement - Campaign Launch</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="POL.ROL.CE"> <span style="font-size:13px">POL.ROL.CE - Policy Rollout - Clean Energy</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="POL.ROL.HC"> <span style="font-size:13px">POL.ROL.HC - Policy Rollout - Healthcare</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="POL.ROL.ED"> <span style="font-size:13px">POL.ROL.ED - Policy Rollout - Education</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="POL.ROL.EC"> <span style="font-size:13px">POL.ROL.EC - Policy Rollout - Economy</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="END.ORG"> <span style="font-size:13px">END.ORG - Endorsement - Organization</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="END.IND"> <span style="font-size:13px">END.IND - Endorsement - Individual</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="END.ELECT"> <span style="font-size:13px">END.ELECT - Endorsement - Elected Official</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="ATT.OPP.CHAR"> <span style="font-size:13px">ATT.OPP.CHAR - Attack - Opponent - Character</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="ATT.OPP.REC"> <span style="font-size:13px">ATT.OPP.REC - Attack - Opponent - Record</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="FUN.HAUL"> <span style="font-size:13px">FUN.HAUL - Fundraising - Haul Announcement</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="FUN.GOAL"> <span style="font-size:13px">FUN.GOAL - Fundraising - Goal/Deadline</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="CRI.CLAR"> <span style="font-size:13px">CRI.CLAR - Crisis - Clarification</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="CRI.RESP"> <span style="font-size:13px">CRI.RESP - Crisis - Response</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="MOB.VOL"> <span style="font-size:13px">MOB.VOL - Mobilization - Volunteer</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="MOB.VOTE"> <span style="font-size:13px">MOB.VOTE - Mobilization - Vote</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="OPS.STAFF"> <span style="font-size:13px">OPS.STAFF - Operations - Staff Hire</span></label>
+          <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" value="OPS.OFFICE"> <span style="font-size:13px">OPS.OFFICE - Operations - Office Opening</span></label>
+        </div>
+        <p class="small" style="margin-top:8px;color:#9fb3c8">💡 First selected becomes primary subtype for template selection</p>
       </div>
 
       <div class="form-group">
@@ -464,7 +464,10 @@ function generateRelease() {
   const issueCheckboxes = document.querySelectorAll('#issueCheckboxes input[type="checkbox"]:checked');
   const issueAreas = Array.from(issueCheckboxes).map(cb => cb.value).join(', ');
 
-  const subtype = document.getElementById('subtype').value.trim();
+  // Collect checked subtypes (as array, order matters - first is primary)
+  const subtypeCheckboxes = document.querySelectorAll('#subtypeCheckboxes input[type="checkbox"]:checked');
+  const subtypes = Array.from(subtypeCheckboxes).map(cb => cb.value);
+
   const ctaUrl = document.getElementById('ctaUrl').value.trim();
 
   // Get endorsement details
@@ -531,7 +534,12 @@ function generateRelease() {
       });
     }
   }
-  if (subtype) release["cpo:subtype"] = subtype;
+  // Add subtypes as array if multiple, single value if one, or omit if none
+  if (subtypes.length > 1) {
+    release["cpo:subtype"] = subtypes;
+  } else if (subtypes.length === 1) {
+    release["cpo:subtype"] = subtypes[0];
+  }
 
   // Add claims
   const claims = [];
@@ -707,7 +715,7 @@ function clearForm() {
   document.getElementById('campaignUrl').value = '';
   document.getElementById('pressEmail').value = '';
   document.querySelectorAll('#issueCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
-  document.getElementById('subtype').value = '';
+  document.querySelectorAll('#subtypeCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
   document.getElementById('endorserName').value = '';
   document.getElementById('endorserRep').value = '';
   document.getElementById('endorserRepTitle').value = '';
@@ -1449,10 +1457,13 @@ function analyzeProseCoherence() {
     jsonld = JSON.parse(jsonPreview);
   } catch (e) {
     // If no JSON generated yet, build minimal one from form
+    const subtypeCheckboxes = document.querySelectorAll('#subtypeCheckboxes input[type="checkbox"]:checked');
+    const subtypes = Array.from(subtypeCheckboxes).map(cb => cb.value);
+
     jsonld = {
       headline,
       datePublished,
-      "cpo:subtype": document.getElementById('subtype').value,
+      "cpo:subtype": subtypes.length > 1 ? subtypes : (subtypes[0] || ""),
       endorser: endorserName ? { name: endorserName } : null
     };
   }
