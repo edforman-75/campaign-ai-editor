@@ -4,24 +4,62 @@
 <title>Prose Suggestion Editor — CPO</title>
 <link rel="stylesheet" href="styles.css">
 <style>
+:root{--bg:#0a1220;--panel:#111a2e;--line:#182544;--text:#e6edf3;--muted:#9fb3c8}
+body{background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
 .flex{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card{background:#111a2e;border:1px solid #182544;border-radius:14px;padding:14px}
-textarea{width:100%;min-height:200px;padding:10px;border-radius:10px;border:1px solid #1f4366;background:#0a1220;color:#e6edf3}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+textarea{width:100%;min-height:200px;padding:10px;border-radius:10px;border:1px solid #1f4366;background:var(--bg);color:var(--text)}
 .controls{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
-select, input[type=checkbox]{padding:8px;border-radius:8px;background:#0a1220;border:1px solid #1f4366;color:#e6edf3}
-button{padding:10px 14px;border-radius:10px;background:#0e2a42;border:1px solid #1f4366;color:#e6edf3;cursor:pointer}
+select,input[type=checkbox]{padding:8px;border-radius:8px;background:var(--bg);border:1px solid #1f4366;color:var(--text)}
+button{padding:8px 12px;border-radius:8px;background:#0e2a42;border:1px solid #1f4366;color:var(--text);cursor:pointer}
+button.secondary{background:#0a1220}
 .suggestion{border:1px dashed #2b3a55;border-radius:10px;padding:10px;margin:10px 0}
 .suggestion h4{margin:0 0 6px 0}
 .suggestion textarea{min-height:80px}
-.small{color:#9fb3c8}
-kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6px}
+.small{color:var(--muted)}
+/* coverage meter */
+.meter{height:10px;border-radius:999px;background:#0f1a2c;border:1px solid #1b3154;overflow:hidden}
+.meter>span{display:block;height:100%;width:0%;transition:width .3s}
+.meter.red>span{background:#b74a4a}
+.meter.amber>span{background:#b79a4a}
+.meter.green>span{background:#3aa76d}
+.badge{border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Prose Suggestion Editor</h1>
   <p class="small">Strengthen prose to match JSON-LD. Choose a tone and generate candidate sentences to insert into the draft.</p>
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label class="small">Tone
+          <select id="style">
+            <option value="neutral">neutral</option>
+            <option value="campaign">campaign</option>
+            <option value="journalistic">journalistic</option>
+            <option value="concise">concise</option>
+            <option value="confident">confident</option>
+          </select>
+        </label>
+        <label class="small"><input type="checkbox" id="autoTone" checked> Auto tone by subtype</label>
+        <label class="small"><input type="checkbox" id="useLLM" checked> Use LLM proxy if available</label>
+      </div>
+      <div>
+        <div class="small">Markup–Prose Parity</div>
+        <div class="meter" id="meter"><span></span></div>
+        <div class="small"><span class="badge" id="parityLabel">Score: —</span></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="btnSuggest">Suggest Prose</button>
+      <span id="status" class="small"></span>
+    </div>
+  </div>
+
   <div class="flex">
     <div class="card">
       <h3>Prose Draft</h3>
@@ -42,23 +80,7 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
     </div>
   </div>
 
-  <div class="controls">
-    <label class="small">Tone
-      <select id="style">
-        <option value="neutral">neutral</option>
-        <option value="campaign">campaign</option>
-        <option value="journalistic">journalistic</option>
-        <option value="concise">concise</option>
-        <option value="confident">confident</option>
-      </select>
-    </label>
-    <label class="small"><input type="checkbox" id="autoTone" checked> Auto tone by subtype</label>
-    <label class="small"><input type="checkbox" id="useLLM" checked> Use LLM proxy if available</label>
-    <button id="btnSuggest">Suggest Prose</button>
-    <span id="status" class="small"></span>
-  </div>
-
-  <div id="suggestions"></div>
+  <div id="suggestions" class="card"></div>
 
   <div class="card">
     <a href="./index.html">← Back to Portal Home</a>
@@ -66,30 +88,67 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
 </div>
 
 <script type="module">
-import { generateSuggestions } from "../cpo_tools/prose_suggestion_engine.js";
+import { generateSuggestions, scoreCoverage, subtypeFamily } from "../cpo_tools/prose_suggestion_engine.js";
 import { llmInvoke, llmFallback } from "../cpo_tools/llm_client.js";
 
 const $ = (s)=>document.querySelector(s);
 const status = $("#status");
 const out = $("#suggestions");
+const meter = $("#meter");
+const meterFill = meter.querySelector("span");
+const parityLabel = $("#parityLabel");
+const styleSel = $("#style");
+const autoTone = $("#autoTone");
 
-function insertAtCursor(textarea, text) {
-  const start = textarea.selectionStart ?? textarea.value.length;
-  const end = textarea.selectionEnd ?? textarea.value.length;
-  const before = textarea.value.substring(0, start);
-  const after = textarea.value.substring(end);
-  textarea.value = before + (before && !before.endsWith("\n") ? "\n" : "") + text + "\n" + after;
-  textarea.focus();
-  textarea.selectionStart = textarea.selectionEnd = (before + text + "\n").length;
+function setMeter(score){
+  meter.classList.remove("red","amber","green");
+  let color = "red";
+  if (score >= 90) color = "green";
+  else if (score >= 60) color = "amber";
+  meter.classList.add(color);
+  meterFill.style.width = Math.max(0,Math.min(100,score)) + "%";
+  parityLabel.textContent = "Score: " + score + "/100";
 }
 
-function renderSuggestions(items) {
+function insertAtPosition(text, where){
+  const area = $("#prose");
+  let val = area.value;
+  const p = val.split(/\n\n/); // paragraphs
+  const line = text.trim();
+
+  if (where === "headline"){
+    // simplest: insert at very top as a new line if not present
+    val = line + "\n\n" + val;
+  } else if (where === "lede"){
+    // after first paragraph
+    if (p.length > 0){
+      p.splice(1, 0, line);
+      val = p.join("\n\n");
+    } else {
+      val = line + "\n\n" + val;
+    }
+  } else if (where === "close"){
+    // add as final paragraph
+    if (val.endsWith("\n\n")) val += line;
+    else val = val + "\n\n" + line;
+  } else {
+    // body (default): insert after second paragraph if exists
+    if (p.length > 1){
+      p.splice(2, 0, line);
+      val = p.join("\n\n");
+    } else {
+      val = val + "\n\n" + line;
+    }
+  }
+  area.value = val;
+}
+
+function renderSuggestions(items){
   out.innerHTML = "";
-  if (!items.length) {
+  if (!items.length){
     out.innerHTML = "<p class='small'>No gaps detected or all covered in prose.</p>";
     return;
   }
-  const proseEl = $("#prose");
   items.forEach((r, idx) => {
     const div = document.createElement("div");
     div.className = "suggestion";
@@ -97,7 +156,11 @@ function renderSuggestions(items) {
       <div style="margin:6px 0">
         <textarea id="sugg_${idx}_${i}">${s}</textarea>
         <div class="controls">
-          <button data-insert="${idx}_${i}">Insert</button>
+          <span class="small">Placement hint: <strong>${r.placement || "body"}</strong></span>
+          <button data-insert="${idx}_${i}" data-where="${r.placement||'body'}">Insert at ${r.placement||'body'}</button>
+          <button class="secondary" data-insert="${idx}_${i}" data-where="lede">Insert at lede</button>
+          <button class="secondary" data-insert="${idx}_${i}" data-where="body">Insert at body</button>
+          <button class="secondary" data-insert="${idx}_${i}" data-where="close">Insert at close</button>
           <button data-copy="${idx}_${i}">Copy</button>
         </div>
       </div>`).join("");
@@ -105,44 +168,28 @@ function renderSuggestions(items) {
     out.appendChild(div);
   });
 
-  out.addEventListener("click", (ev)=>{
+  out.onclick = (ev)=>{
     const t = ev.target;
-    if (t.matches("[data-insert]")) {
+    if (t.matches("[data-insert]")){
       const key = t.getAttribute("data-insert");
+      const where = t.getAttribute("data-where") || "body";
       const ta = document.getElementById("sugg_" + key);
-      if (ta && ta.value.trim()) {
-        insertAtCursor(proseEl, ta.value.trim());
-        status.textContent = "Inserted suggestion into prose.";
+      if (ta && ta.value.trim()){
+        insertAtPosition(ta.value.trim(), where);
+        status.textContent = "Inserted at " + where + ".";
       }
-    } else if (t.matches("[data-copy]")) {
+    } else if (t.matches("[data-copy]")){
       const key = t.getAttribute("data-copy");
       const ta = document.getElementById("sugg_" + key);
-      if (ta) {
-        navigator.clipboard.writeText(ta.value).then(()=>{
-          status.textContent = "Copied suggestion to clipboard.";
-        });
+      if (ta){
+        navigator.clipboard.writeText(ta.value).then(()=> status.textContent = "Copied to clipboard.");
       }
     }
-  }, { once: true });
-}
-
-function pickAutoTone(subtypes, map) {
-  if (!subtypes || !subtypes.length) return null;
-  const s = subtypes[0];
-  const fam = s.startsWith("ANN.") ? "ANN" :
-    s.startsWith("POL.") || s.startsWith("POLICY.") ? "POLICY" :
-    s.startsWith("END.") || s.startsWith("ENDORSE") ? "ENDORSEMENT" :
-    s.startsWith("FUND.") || s.startsWith("FR.") ? "FUNDRAISING" :
-    s.startsWith("CRI.") || s.startsWith("CRISIS") ? "CRISIS" :
-    s.startsWith("MOB.") || s.startsWith("GRA.") || s.startsWith("MOBIL") ? "MOBILIZATION" :
-    s.startsWith("OPS.") || s.startsWith("OPER") ? "OPS" :
-    s.startsWith("NEWS.") ? "NEWS" : "neutral";
-  return map[fam] || null;
+  };
 }
 
 async function llmFn({ system, prompt }){
-  // honor the user's checkbox; fallback keeps UI functioning
-  if (!$("#useLLM").checked) return llmFallback({ prompt });
+  if (!document.getElementById("useLLM").checked) return llmFallback({ prompt });
   try {
     return await llmInvoke({ system, prompt, temperature: 0.3, maxTokens: 120 });
   } catch (e) {
@@ -151,28 +198,44 @@ async function llmFn({ system, prompt }){
   }
 }
 
-async function suggest() {
+function pickAutoTone(subtypes, map){
+  if(!subtypes||!subtypes.length) return null;
+  const fam = subtypeFamily(subtypes[0]);
+  return map && map[fam] ? map[fam] : null;
+}
+
+async function suggest(){
   status.textContent = "Analyzing…";
   try {
     const prose = $("#prose").value;
-    const jsonld = JSON.parse($("#jsonld").value);
+    const json = JSON.parse($("#jsonld").value);
     const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
 
-    // Auto-select tone based on subtype if enabled
-    const st = Array.isArray(jsonld["cpo:subtype"]) ? jsonld["cpo:subtype"] : (jsonld["cpo:subtype"] ? [jsonld["cpo:subtype"]] : []);
-    if ($("#autoTone") && $("#autoTone").checked) {
+    // coverage heatmap
+    const coverage = scoreCoverage({ proseText: prose, jsonld: json });
+    setMeter(coverage.score);
+
+    // auto tone
+    const st = Array.isArray(json["cpo:subtype"])? json["cpo:subtype"] : (json["cpo:subtype"]?[json["cpo:subtype"]]:[]);
+    if (autoTone && autoTone.checked){
       const auto = pickAutoTone(st, prompts.defaultToneBySubtypeFamily || {});
-      if (auto) $("#style").value = auto;
+      if (auto) styleSel.value = auto;
     }
 
-    const style = $("#style").value;
-    const results = await generateSuggestions({ proseText: prose, jsonld, prompts, llmFn, style });
+    const results = await generateSuggestions({
+      proseText: prose,
+      jsonld: json,
+      prompts,
+      llmFn,
+      style: styleSel.value
+    });
     renderSuggestions(results);
     status.textContent = "Suggestions ready.";
   } catch (e) {
     status.textContent = "Error: " + e.message;
   }
 }
-$("#btnSuggest").addEventListener("click", suggest);
+
+document.getElementById("btnSuggest").addEventListener("click", suggest);
 </script>
 </body></html>

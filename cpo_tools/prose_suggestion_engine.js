@@ -1,4 +1,4 @@
-/* Prose Suggestion Engine (multi-subtype aware, tone-aware templates) */
+/* Prose Suggestion Engine (multi-subtype, tone-aware, coverage scoring, placement) */
 export const defaultHeuristics = {
   headline: { required: true, cues: ["headline","announces","statement"] },
   datePublished: { required: true, cues: ["today","on ","dated"] },
@@ -11,22 +11,35 @@ export const defaultHeuristics = {
 
 export const safeArray = (x)=>Array.isArray(x)?x:(x==null?[]:[x]);
 
+/* map subtype code -> high-level family */
+export function subtypeFamily(code=""){
+  const c = String(code||"");
+  if (c.startsWith("ANN.")) return "ANN";
+  if (c.startsWith("POL.") || c.startsWith("POLICY.")) return "POLICY";
+  if (c.startsWith("END.") || c.startsWith("ENDORSE")) return "ENDORSEMENT";
+  if (c.startsWith("FUND.") || c.startsWith("FR.")) return "FUNDRAISING";
+  if (c.startsWith("CRI.") || c.startsWith("CRISIS")) return "CRISIS";
+  if (c.startsWith("MOB.") || c.startsWith("GRA.") || c.startsWith("MOBIL")) return "MOBILIZATION";
+  if (c.startsWith("OPS.") || c.startsWith("OPER")) return "OPS";
+  if (c.startsWith("NEWS.")) return "NEWS";
+  return "default";
+}
+
 export function extractEntities(jsonld){
-  const types = safeArray(jsonld["@type"]);
   const claims = Array.isArray(jsonld["cpo:claims"]) ? jsonld["cpo:claims"] : [];
   const subjectOf = Array.isArray(jsonld.subjectOf) ? jsonld.subjectOf : [];
   const events = subjectOf.filter(x => safeArray(x && x["@type"]).includes("Event"));
-  const author = jsonld.author || {};
-  const cta = jsonld["cpo:cta"] || {};
   const subtypes = safeArray(jsonld["cpo:subtype"]).filter(Boolean);
   return {
-    types, claims, events, author, cta,
     headline: jsonld.headline || "",
     datePublished: jsonld.datePublished || "",
     subtypes,
     primarySubtype: subtypes[0] || "",
     endorser: jsonld.endorser || jsonld["cpo:endorser"] || null,
-    location: jsonld.location || null
+    location: jsonld.location || null,
+    claims,
+    cta: jsonld["cpo:cta"] || {},
+    events
   };
 }
 
@@ -37,6 +50,60 @@ export function proseCovers(text, fieldKey, entityValue, heuristics = defaultHeu
   let literalFound = false;
   if (typeof entityValue === "string") literalFound = t.includes(entityValue.toLowerCase());
   return cuesFound || literalFound;
+}
+
+/* coverage score and per-field report */
+export function scoreCoverage({ proseText, jsonld, heuristics = defaultHeuristics }){
+  const ents = extractEntities(jsonld);
+  const reqFields = [
+    ["headline", ents.headline],
+    ["datePublished", ents.datePublished],
+    ["cpo:subtype", ents.subtypes.join(",")]
+  ];
+  const optFields = [
+    ["endorser", ents.endorser],
+    ["location", ents.location],
+    ["cpo:claims", ents.claims && ents.claims.length ? "[claims]" : null],
+    ["cpo:cta", ents.cta && ents.cta.url ? ents.cta.url : null]
+  ];
+  const report = [];
+  let requiredTotal = 0, requiredCovered = 0, optionalTotal = 0, optionalCovered = 0;
+
+  for (const [k,v] of reqFields){
+    requiredTotal++;
+    const covered = proseCovers(proseText, k, v, heuristics);
+    if (covered) requiredCovered++;
+    report.push({ key:k, required:true, covered, value:v });
+  }
+  for (const [k,v] of optFields){
+    if (!v) continue;
+    optionalTotal++;
+    const covered = proseCovers(proseText, k, v, heuristics);
+    if (covered) optionalCovered++;
+    report.push({ key:k, required:false, covered, value:v });
+  }
+
+  const reqWeight = 0.7; // 70% of score from required, 30% from optional
+  const optWeight = 0.3;
+  const reqScore = requiredTotal ? (requiredCovered/requiredTotal) : 1;
+  const optScore = optionalTotal ? (optionalCovered/optionalTotal) : 1;
+  const score = Math.round(100*(reqWeight*reqScore + optWeight*optScore));
+
+  return { score, report, entities: ents };
+}
+
+/* placement recommender */
+export function suggestPlacement(fieldKey, primaryFamily){
+  // Defaults matter more than family in many cases
+  if (fieldKey === "headline") return "headline";
+  if (fieldKey === "datePublished") return "lede";
+  if (fieldKey === "endorser") return primaryFamily === "ENDORSEMENT" ? "lede" : "body";
+  if (fieldKey === "location") return "lede";
+  if (fieldKey === "cpo:claims") return primaryFamily === "POLICY" || primaryFamily === "CRISIS" ? "body" : "body";
+  if (fieldKey === "cpo:cta") return "close";
+  if (fieldKey === "Event") return primaryFamily === "ANN" || primaryFamily === "MOBILIZATION" ? "lede" : "body";
+  if (fieldKey === "cpo:subtype") return "lede";
+  return "body";
 }
 
 export function analyzeCoherence({ proseText, jsonld, heuristics = defaultHeuristics }){
@@ -53,6 +120,7 @@ export function analyzeCoherence({ proseText, jsonld, heuristics = defaultHeuris
     { key: "cpo:claims", val: ents.claims && ents.claims.length ? "[claims]" : null },
     { key: "cpo:cta", val: ents.cta && ents.cta.url ? ents.cta.url : null }
   ];
+
   for (const r of reqs){
     const covered = proseCovers(proseText, r.key, r.val, heuristics);
     if(!covered) gaps.push({ key:r.key, value:r.val, required:true });
@@ -64,29 +132,15 @@ export function analyzeCoherence({ proseText, jsonld, heuristics = defaultHeuris
   }
   if (ents.events.length){
     const names = ents.events.map(e => e.name).filter(Boolean);
-    if (names.length && !names.some(n => proseText.toLowerCase().includes(String(n).toLowerCase()))) {
+    if (names.length && !names.some(n => proseText.toLowerCase().includes(String(n).toLowerCase()))){
       gaps.push({ key:"Event", value:names[0], required:false });
     }
   }
   return { entities: ents, gaps };
 }
 
-/* Map detailed codes to high-level families for template selection */
 function chooseSubtypeFamily(subtypes){
-  const fam = (code)=>{
-    const c = String(code||"");
-    if (c.startsWith("ANN.")) return "ANN";
-    if (c.startsWith("POL.") || c.startsWith("POLICY.")) return "POLICY";
-    if (c.startsWith("END.") || c.startsWith("ENDORSE")) return "ENDORSEMENT";
-    if (c.startsWith("FUND.") || c.startsWith("FR.")) return "FUNDRAISING";
-    if (c.startsWith("CRI.") || c.startsWith("CRISIS")) return "CRISIS";
-    if (c.startsWith("MOB.") || c.startsWith("GRA.") || c.startsWith("MOBIL")) return "MOBILIZATION";
-    if (c.startsWith("OPS.") || c.startsWith("OPER")) return "OPS";
-    if (c.startsWith("NEWS.")) return "NEWS";
-    return c || "default";
-  };
-  if (!subtypes || !subtypes.length) return "default";
-  return fam(subtypes[0]) || "default"; // primary is first
+  return subtypeFamily(subtypes && subtypes[0]);
 }
 
 export async function generateSuggestions({ proseText, jsonld, llmFn, prompts, style = "neutral" }){
@@ -94,7 +148,6 @@ export async function generateSuggestions({ proseText, jsonld, llmFn, prompts, s
   const out = [];
   const subtypes = entities.subtypes;
   const primaryFamily = chooseSubtypeFamily(subtypes);
-
   for (const gap of gaps){
     const tpl = pickTemplate({ gap, prompts, style, subtypes, primaryFamily });
     const filled = fillTemplate(tpl, { gap, jsonld, primarySubtype: entities.primarySubtype });
@@ -108,7 +161,13 @@ export async function generateSuggestions({ proseText, jsonld, llmFn, prompts, s
     } else {
       variants = [filled];
     }
-    out.push({ missing_field: gap.key, value: gap.value, required: !!gap.required, suggestions: variants });
+    out.push({
+      missing_field: gap.key,
+      value: gap.value,
+      required: !!gap.required,
+      placement: suggestPlacement(gap.key, primaryFamily),
+      suggestions: variants
+    });
   }
   return out;
 }
@@ -116,29 +175,21 @@ export async function generateSuggestions({ proseText, jsonld, llmFn, prompts, s
 export function pickTemplate({ gap, prompts, style, subtypes, primaryFamily }){
   const lib = (prompts && prompts.templates) || {};
   const key = gap.key;
-
-  // Prefer family+field (e.g., templates.ENDORSEMENT.endorser.campaign[0])
   const famBlock = lib[primaryFamily] || {};
   const famField = famBlock[key];
   if (famField){
     const styled = famField[style] || famField["neutral"] || famField;
     if (Array.isArray(styled) && styled.length) return styled[0];
   }
-
-  // Then field-only block (e.g., templates.endorser.campaign[0])
   const byField = lib[key];
   if (byField){
     const styled = byField[style] || byField["neutral"] || byField;
     if (Array.isArray(styled) && styled.length) return styled[0];
   }
-
-  // Then family default
   if (famBlock && famBlock.default){
     const styled = famBlock.default[style] || famBlock.default["neutral"] || famBlock.default;
     if (Array.isArray(styled) && styled.length) return styled[0];
   }
-
-  // Global default
   const def = lib.default || {};
   const styled = def[style] || def["neutral"] || [];
   return Array.isArray(styled) && styled.length ? styled[0] : "Write one sentence addressing {{key}} ({{value}}).";
