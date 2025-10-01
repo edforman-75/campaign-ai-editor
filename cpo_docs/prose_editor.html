@@ -52,6 +52,7 @@ kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6p
         <option value="confident">confident</option>
       </select>
     </label>
+    <label class="small"><input type="checkbox" id="autoTone" checked> Auto tone by subtype</label>
     <label class="small"><input type="checkbox" id="useLLM" checked> Use LLM proxy if available</label>
     <button id="btnSuggest">Suggest Prose</button>
     <span id="status" class="small"></span>
@@ -125,6 +126,20 @@ function renderSuggestions(items) {
   }, { once: true });
 }
 
+function pickAutoTone(subtypes, map) {
+  if (!subtypes || !subtypes.length) return null;
+  const s = subtypes[0];
+  const fam = s.startsWith("ANN.") ? "ANN" :
+    s.startsWith("POL.") || s.startsWith("POLICY.") ? "POLICY" :
+    s.startsWith("END.") || s.startsWith("ENDORSE") ? "ENDORSEMENT" :
+    s.startsWith("FUND.") || s.startsWith("FR.") ? "FUNDRAISING" :
+    s.startsWith("CRI.") || s.startsWith("CRISIS") ? "CRISIS" :
+    s.startsWith("MOB.") || s.startsWith("GRA.") || s.startsWith("MOBIL") ? "MOBILIZATION" :
+    s.startsWith("OPS.") || s.startsWith("OPER") ? "OPS" :
+    s.startsWith("NEWS.") ? "NEWS" : "neutral";
+  return map[fam] || null;
+}
+
 async function llmFn({ system, prompt }){
   // honor the user's checkbox; fallback keeps UI functioning
   if (!$("#useLLM").checked) return llmFallback({ prompt });
@@ -142,6 +157,14 @@ async function suggest() {
     const prose = $("#prose").value;
     const jsonld = JSON.parse($("#jsonld").value);
     const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
+
+    // Auto-select tone based on subtype if enabled
+    const st = Array.isArray(jsonld["cpo:subtype"]) ? jsonld["cpo:subtype"] : (jsonld["cpo:subtype"] ? [jsonld["cpo:subtype"]] : []);
+    if ($("#autoTone") && $("#autoTone").checked) {
+      const auto = pickAutoTone(st, prompts.defaultToneBySubtypeFamily || {});
+      if (auto) $("#style").value = auto;
+    }
+
     const style = $("#style").value;
     const results = await generateSuggestions({ proseText: prose, jsonld, prompts, llmFn, style });
     renderSuggestions(results);

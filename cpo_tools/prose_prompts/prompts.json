@@ -7,6 +7,16 @@
     "concise": "As short as possible without losing meaning.",
     "confident": "Assertive and assured while remaining factual."
   },
+  "defaultToneBySubtypeFamily": {
+    "ANN": "campaign",
+    "POLICY": "journalistic",
+    "ENDORSEMENT": "campaign",
+    "FUNDRAISING": "campaign",
+    "CRISIS": "neutral",
+    "MOBILIZATION": "campaign",
+    "OPS": "neutral",
+    "NEWS": "journalistic"
+  },
   "templates": {
     "default": {
       "neutral": [
