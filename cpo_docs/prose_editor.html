@@ -8,18 +8,20 @@
 .flex{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .card{background:#111a2e;border:1px solid #182544;border-radius:14px;padding:14px}
 textarea{width:100%;min-height:200px;padding:10px;border-radius:10px;border:1px solid #1f4366;background:#0a1220;color:#e6edf3}
-.controls{display:flex;gap:10px;align-items:center;margin:10px 0}
+.controls{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
+select, input[type=checkbox]{padding:8px;border-radius:8px;background:#0a1220;border:1px solid #1f4366;color:#e6edf3}
 button{padding:10px 14px;border-radius:10px;background:#0e2a42;border:1px solid #1f4366;color:#e6edf3;cursor:pointer}
 .suggestion{border:1px dashed #2b3a55;border-radius:10px;padding:10px;margin:10px 0}
 .suggestion h4{margin:0 0 6px 0}
 .suggestion textarea{min-height:80px}
 .small{color:#9fb3c8}
+kbd{background:#111a2e;border:1px solid #182544;border-radius:6px;padding:2px 6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Prose Suggestion Editor</h1>
-  <p class="small">Strengthen prose to match JSON-LD. Generate candidate sentences, then insert into the draft.</p>
+  <p class="small">Strengthen prose to match JSON-LD. Choose a tone and generate candidate sentences to insert into the draft.</p>
   <div class="flex">
     <div class="card">
       <h3>Prose Draft</h3>
@@ -41,6 +43,16 @@ button{padding:10px 14px;border-radius:10px;background:#0e2a42;border:1px solid 
   </div>
 
   <div class="controls">
+    <label class="small">Tone
+      <select id="style">
+        <option value="neutral">neutral</option>
+        <option value="campaign">campaign</option>
+        <option value="journalistic">journalistic</option>
+        <option value="concise">concise</option>
+        <option value="confident">confident</option>
+      </select>
+    </label>
+    <label class="small"><input type="checkbox" id="useLLM" checked> Use LLM proxy if available</label>
     <button id="btnSuggest">Suggest Prose</button>
     <span id="status" class="small"></span>
   </div>
@@ -54,6 +66,8 @@ button{padding:10px 14px;border-radius:10px;background:#0e2a42;border:1px solid 
 
 <script type="module">
 import { generateSuggestions } from "../cpo_tools/prose_suggestion_engine.js";
+import { llmInvoke, llmFallback } from "../cpo_tools/llm_client.js";
+
 const $ = (s)=>document.querySelector(s);
 const status = $("#status");
 const out = $("#suggestions");
@@ -111,13 +125,25 @@ function renderSuggestions(items) {
   }, { once: true });
 }
 
+async function llmFn({ system, prompt }){
+  // honor the user's checkbox; fallback keeps UI functioning
+  if (!$("#useLLM").checked) return llmFallback({ prompt });
+  try {
+    return await llmInvoke({ system, prompt, temperature: 0.3, maxTokens: 120 });
+  } catch (e) {
+    console.warn("LLM proxy not available, using fallback:", e.message);
+    return llmFallback({ prompt });
+  }
+}
+
 async function suggest() {
   status.textContent = "Analyzing…";
   try {
     const prose = $("#prose").value;
     const jsonld = JSON.parse($("#jsonld").value);
     const prompts = await (await fetch("../cpo_tools/prose_prompts/prompts.json")).json();
-    const results = await generateSuggestions({ proseText: prose, jsonld, prompts, llmFn: null });
+    const style = $("#style").value;
+    const results = await generateSuggestions({ proseText: prose, jsonld, prompts, llmFn, style });
     renderSuggestions(results);
     status.textContent = "Suggestions ready.";
   } catch (e) {
