@@ -22,3 +22,6 @@ Suggestion Engine
 - Reads arrays in `cpo:subtype`.
 - Picks templates based on the primary family of the first subtype, with fallbacks.
 - Includes tone hints in the LLM prompt (neutral, campaign, journalistic, concise, confident).
+
+---
+[← Back to Portal Home](index.html)

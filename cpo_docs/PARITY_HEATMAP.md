@@ -10,3 +10,6 @@
   - lede: after the opening paragraph.
   - body: mid-article context.
   - close: final paragraph (CTA, donation, RSVP).
+
+---
+[← Back to Portal Home](index.html)

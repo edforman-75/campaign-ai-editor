@@ -23,3 +23,6 @@
 ## Tips
 - If a field is **not in markup**, it's not counted — either add it to markup or adjust prose expectations.
 - Use the **placement buttons** to insert missing lines in sensible spots (headline, lede, body, close).
+
+---
+[← Back to Portal Home](index.html)

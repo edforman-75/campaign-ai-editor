@@ -42,3 +42,6 @@ app.listen(process.env.PORT || 3000, () => console.log('LLM proxy on 3000'));
 ```
 
 Deploy this alongside your portal (or as a serverless function). The editor will call `/api/llm` automatically.
+
+---
+[← Back to Portal Home](index.html)
